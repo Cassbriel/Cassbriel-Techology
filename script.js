@@ -373,5 +373,38 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // ---------------------------------------------------------
+    // 8. MOBILE MENU LOGIC
+    // ---------------------------------------------------------
+    const mobileMenuTrigger = document.getElementById('mobileMenuTrigger');
+    const navLinks = document.getElementById('navLinks');
+    const mobileAdminTrigger = document.getElementById('mobileAdminTrigger');
+
+    function toggleMenu() {
+        navLinks.classList.toggle('active');
+        const icon = mobileMenuTrigger.querySelector('i');
+        if (icon) {
+            icon.classList.toggle('fa-bars');
+            icon.classList.toggle('fa-xmark');
+        }
+    }
+
+    mobileMenuTrigger?.addEventListener('click', toggleMenu);
+
+    mobileAdminTrigger?.addEventListener('click', (e) => {
+        e.preventDefault();
+        toggleMenu();
+        document.getElementById('loginOverlay').classList.add('active');
+    });
+
+    // Close menu when clicking a link
+    document.querySelectorAll('.nav-links a:not(#mobileAdminTrigger)').forEach(link => {
+        link.addEventListener('click', () => {
+            if (navLinks.classList.contains('active')) {
+                toggleMenu();
+            }
+        });
+    });
+
     updateFrontend();
 });

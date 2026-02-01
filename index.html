@@ -51,13 +51,18 @@
                 <img src="logo.png" alt="Cassbriel Logo" loading="lazy">
                 <div class="logo-text">CASSBRIEL <span>TECH</span></div>
             </a>
-            <ul class="nav-links">
+            <button class="mobile-menu-btn" id="mobileMenuTrigger" aria-label="Menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <ul class="nav-links" id="navLinks">
                 <li><a href="#inicio" class="active">Inicio</a></li>
                 <li><a href="#servicios">Servicios</a></li>
                 <li><a href="#proyectos">Proyectos</a></li>
                 <li><a href="#contacto">Contacto</a></li>
+                <!-- Move login to specific mobile link -->
+                <li class="mobile-only"><a href="#" id="mobileAdminTrigger">Acceso Admin</a></li>
             </ul>
-            <button class="admin-trigger" id="openAdmin">
+            <button class="admin-trigger desktop-only" id="openAdmin">
                 <i class="fa-solid fa-user-shield"></i> Ingresa
             </button>
         </div>
