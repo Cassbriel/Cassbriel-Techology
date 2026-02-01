@@ -1,18 +1,56 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. PANEL MAESTRO TOGGLE
+    // 1. LOGIN & CONTROL MAESTRO LOGIC
     const openAdminBtn = document.getElementById('openAdmin');
-    const closeAdminBtn = document.getElementById('closeAdmin');
+    const loginOverlay = document.getElementById('loginOverlay');
+    const closeLoginBtn = document.getElementById('closeLogin');
+    const loginForm = document.getElementById('loginForm');
     const adminPanel = document.getElementById('adminPanel');
+    const loginError = document.getElementById('loginError');
 
-    if (openAdminBtn && adminPanel) {
+    // Open Login Modal
+    if (openAdminBtn) {
         openAdminBtn.addEventListener('click', () => {
-            adminPanel.style.display = 'flex';
-            setTimeout(() => {
-                adminPanel.classList.add('active');
-                document.body.style.overflow = 'hidden'; // Lock scroll
-            }, 10);
+            loginOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
         });
     }
+
+    // Close Login Modal
+    if (closeLoginBtn) {
+        closeLoginBtn.addEventListener('click', () => {
+            loginOverlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+            loginError.style.display = 'none';
+            loginForm.reset();
+        });
+    }
+
+    // Login Validation
+    if (loginForm) {
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+
+            // Credenciales solicitadas
+            if (user === 'Hector' && pass === 'Cassiel@123') {
+                loginOverlay.classList.remove('active');
+                adminPanel.style.display = 'flex';
+                setTimeout(() => {
+                    adminPanel.classList.add('active');
+                }, 10);
+            } else {
+                loginError.style.display = 'block';
+                // Shake effect
+                const card = document.querySelector('.login-card');
+                card.style.animation = 'none';
+                void card.offsetWidth;
+                card.style.animation = 'shake 0.4s ease';
+            }
+        });
+    }
+
+    const closeAdminBtn = document.getElementById('closeAdmin');
 
     if (closeAdminBtn && adminPanel) {
         closeAdminBtn.addEventListener('click', () => {

@@ -32,10 +32,36 @@
                 <li><a href="#contacto">Contacto</a></li>
             </ul>
             <button class="admin-trigger" id="openAdmin">
-                <i class="fa-solid fa-user-shield"></i> Panel Maestro
+                <i class="fa-solid fa-user-shield"></i> Ingresa
             </button>
         </div>
     </nav>
+
+    <!-- Login Modal -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-card">
+            <div class="login-header">
+                <i class="fa-solid fa-shield-halved"></i>
+                <h2>Control Maestro</h2>
+                <p>Ingrese sus credenciales de administrador</p>
+            </div>
+            <form id="loginForm">
+                <div class="input-group">
+                    <label>Usuario</label>
+                    <input type="text" id="username" placeholder="Usuario" required>
+                </div>
+                <div class="input-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="cta-primary" style="width: 100%; margin-top: 1rem;">Acceder</button>
+            </form>
+            <p id="loginError"
+                style="color: #ff4d4d; font-size: 0.8rem; margin-top: 1rem; text-align: center; display: none;">
+                Credenciales incorrectas</p>
+            <button class="close-login" id="closeLogin">Cancelar</button>
+        </div>
+    </div>
 
     <!-- Hero Section -->
     <section id="inicio" class="hero">
@@ -97,7 +123,7 @@
         <button class="close-panel" id="closeAdmin"><i class="fa-solid fa-xmark"></i></button>
 
         <aside class="panel-sidebar">
-            <div class="sidebar-logo">DASHBOARD MAESTRO</div>
+            <div class="sidebar-logo">CONTROL MAESTRO</div>
             <ul class="sidebar-menu">
                 <li class="active" data-tab="resumen"><i class="fa-solid fa-chart-line"></i> <span>Resumen</span></li>
                 <li data-tab="productos"><i class="fa-solid fa-box-open"></i> <span>Productos/Servicios</span></li>
