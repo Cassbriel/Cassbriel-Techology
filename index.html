@@ -72,11 +72,57 @@
             <p>Especialistas en seguridad electrónica, infraestructura de red y soluciones de hardware a medida.
                 Innovamos para que tu tranquilidad no tenga límites.</p>
             <div class="btn-group">
-                <button class="cta-primary">Presupuesto Gratis</button>
+                <button class="cta-primary" id="openQuote">Presupuesto Gratis</button>
                 <a href="#servicios" class="cta-secondary">Nuestros Servicios</a>
             </div>
         </div>
     </section>
+
+    <!-- Modal: Cotización Gratis -->
+    <div class="login-overlay" id="quoteModal">
+        <div class="login-card" style="max-width: 500px;">
+            <div class="login-header">
+                <i class="fa-solid fa-file-invoice-dollar"></i>
+                <h2>Solicitar Cotización</h2>
+                <p>Déjanos tus datos y te contactaremos de inmediato.</p>
+            </div>
+            <form id="quoteForm" action="https://formspree.io/f/mqakevve" method="POST">
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Nombre Completo</label>
+                        <input type="text" name="nombre" placeholder="Ej: Juan Pérez" required>
+                    </div>
+                    <div class="input-group">
+                        <label>WhatsApp / Celular</label>
+                        <input type="tel" name="whatsapp" placeholder="Ej: 900 000 000" required>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Correo Electrónico</label>
+                    <input type="email" name="email" placeholder="correo@ejemplo.com" required>
+                </div>
+                <div class="input-group">
+                    <label>Servicio de Interés</label>
+                    <select name="servicio" class="styled-select" required>
+                        <option value="camaras">Cámaras de Seguridad</option>
+                        <option value="soporte">Soporte Técnico</option>
+                        <option value="redes">Redes e Infraestructura</option>
+                        <option value="radio">Radio Enlaces</option>
+                        <option value="otros">Otros</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Mensaje / Detalles Adicionales</label>
+                    <textarea name="mensaje" rows="3"
+                        placeholder="Cuéntanos un poco más sobre tu necesidad..."></textarea>
+                </div>
+                <div style="display: flex; gap:10px; margin-top: 1rem;">
+                    <button type="submit" class="cta-primary" style="flex:1">Enviar Solicitud</button>
+                    <button type="button" class="cta-secondary" id="closeQuoteModal">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Services Section -->
     <section id="servicios" class="services">

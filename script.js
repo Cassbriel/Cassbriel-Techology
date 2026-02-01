@@ -325,5 +325,55 @@ document.addEventListener('DOMContentLoaded', () => {
     const revealObserver = new IntersectionObserver((entries) => { entries.forEach(entry => { if (entry.isIntersecting) { entry.target.style.opacity = '1'; entry.target.style.transform = 'translateY(0)'; } }); }, { threshold: 0.1 });
     document.querySelectorAll('.service-card').forEach(card => { card.style.opacity = '0'; card.style.transform = 'translateY(30px)'; card.style.transition = 'all 0.6s ease-out'; revealObserver.observe(card); });
 
+    // ---------------------------------------------------------
+    // 7. COTIZACIÓN GRATIS MODAL LOGIC
+    // ---------------------------------------------------------
+    const quoteModal = document.getElementById('quoteModal');
+    const openQuoteBtn = document.getElementById('openQuote');
+    const closeQuoteBtn = document.getElementById('closeQuoteModal');
+    const quoteForm = document.getElementById('quoteForm');
+
+    openQuoteBtn?.addEventListener('click', () => {
+        quoteModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    });
+
+    closeQuoteBtn?.addEventListener('click', () => {
+        quoteModal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    });
+
+    quoteForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = new FormData(quoteForm);
+        const submitBtn = quoteForm.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Enviando...";
+
+        try {
+            const response = await fetch(quoteForm.action, {
+                method: quoteForm.method,
+                body: data,
+                headers: { 'Accept': 'application/json' }
+            });
+
+            if (response.ok) {
+                alert("¡Solicitud enviada con éxito! Revisa tu correo de confirmación.");
+                quoteForm.reset();
+                quoteModal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            } else {
+                alert("Hubo un problema. Por favor intenta de nuevo.");
+            }
+        } catch (error) {
+            alert("Error de conexión. Verifica tu internet e intenta de nuevo.");
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        }
+    });
+
     updateFrontend();
 });
