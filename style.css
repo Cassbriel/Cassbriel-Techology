@@ -683,25 +683,201 @@ textarea {
     }
 }
 
+/* --- Mobile Optimizations & Responsive UI --- */
+.mobile-menu-btn {
+    display: none;
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 1001;
+}
+
 @media (max-width: 968px) {
-    .hero h1 {
-        font-size: 3.5rem;
+    .container {
+        padding: 0 1.5rem;
+    }
+
+    .mobile-menu-btn {
+        display: block;
     }
 
     .nav-links {
-        display: none;
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 80%;
+        height: 100vh;
+        background: var(--dark-void);
+        flex-direction: column;
+        justify-content: center;
+        gap: 2rem;
+        transition: var(--transition);
+        border-left: 1px solid var(--glass-border);
+    }
+
+    .nav-links.active {
+        right: 0;
+    }
+
+    .nav-links li a {
+        font-size: 1.2rem;
+    }
+
+    .hero {
+        height: auto;
+        padding: 120px 0 80px;
+        text-align: center;
+    }
+
+    .hero-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .hero h1 {
+        font-size: 2.5rem;
+    }
+
+    .hero p {
+        font-size: 1rem;
+        margin: 0 auto 2rem;
+    }
+
+    .btn-group {
+        justify-content: center;
+        width: 100%;
+    }
+
+    .cta-primary,
+    .cta-secondary {
+        width: 100%;
+        padding: 1rem;
+    }
+
+    .services {
+        padding: 80px 0;
+    }
+
+    .section-head h2 {
+        font-size: 2rem;
+    }
+
+    .service-card {
+        padding: 2rem;
+    }
+
+    /* Admin Panel Mobile */
+    .panel-maestro.active {
+        flex-direction: column;
     }
 
     .panel-sidebar {
-        width: 80px;
+        width: 100%;
+        height: auto;
         padding: 1rem;
+        flex-direction: row;
+        justify-content: space-around;
+        border-right: none;
+        border-bottom: 1px solid var(--glass-border);
+        position: sticky;
+        top: 0;
+        z-index: 2200;
+    }
+
+    .sidebar-logo {
+        display: none;
+    }
+
+    .sidebar-menu {
+        display: flex;
+        width: 100%;
+        justify-content: space-between;
+        gap: 5px;
+    }
+
+    .sidebar-menu li {
+        padding: 0.8rem;
+        margin: 0;
+        flex: 1;
+        justify-content: center;
     }
 
     .sidebar-menu li span {
         display: none;
     }
 
-    .sidebar-logo {
-        display: none;
+    .sidebar-menu li i {
+        font-size: 1.2rem;
+        margin: 0;
+    }
+
+    .panel-content {
+        padding: 1.5rem;
+        padding-top: 1rem;
+    }
+
+    .tab-title {
+        font-size: 1.4rem;
+    }
+
+    .tab-header-flex {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .admin-trigger {
+        width: 100%;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .stat-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Table Responsive */
+    .admin-table-container {
+        border: none;
+        overflow-x: auto;
+    }
+
+    table {
+        min-width: 600px;
+    }
+
+    .login-card {
+        padding: 2rem;
+        width: 90%;
+    }
+
+    .whatsapp-float {
+        width: 55px;
+        height: 55px;
+        bottom: 1.5rem;
+        right: 1.5rem;
+    }
+
+    .close-panel {
+        top: 0.8rem;
+        right: 1rem;
+        width: 35px;
+        height: 35px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero h1 {
+        font-size: 2rem;
+    }
+
+    .section-head h2 {
+        font-size: 1.8rem;
     }
 }
