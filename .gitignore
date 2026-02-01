@@ -1,0 +1,22 @@
+# --- Específico de Google Antigravity & IDX ---
+.antigravity/
+.idx/
+.google/
+artifacts/
+*.plan
+
+# --- Dependencias y Compilación ---
+node_modules/
+dist/
+build/
+.cache/
+
+# --- Variables de Entorno y Logs ---
+.env
+.env.local
+*.log
+npm-debug.log*
+
+# --- Archivos de Sistema ---
+.DS_Store
+Thumbs.db
