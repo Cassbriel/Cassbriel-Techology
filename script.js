@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ---------------------------------------------------------
     // 1. SISTEMA DE BASE DE DATOS (LIVING DB)
     // ---------------------------------------------------------
-    const DB_KEY = 'cassbriel_master_ultra_v5';
+    const DB_KEY = 'cassbriel_master_ultra_v6';
     let db = JSON.parse(localStorage.getItem(DB_KEY)) || {
         users: [
             { id: 1, user: 'Hector', pass: 'Cassiel@123', role: 'admin', perms: ['edit_web', 'view_money', 'manage_users'] }
@@ -17,9 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
             { id: 1, name: 'Cámara IP Hikvision 4MP', category: 'Seguridad', price: 250, stock: 15 },
             { id: 2, name: 'Repetidor WiFi TP-Link', category: 'Redes', price: 85, stock: 24 }
         ],
-        movements: [
-            { id: 1, concept: 'Saldo Inicial', amount: 12450.00, type: 'ingreso', date: '01/02/2026' }
-        ]
+        movements: []
     };
 
     function saveDB() {
