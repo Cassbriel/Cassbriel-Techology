@@ -4,14 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cassbriel Techology | Futuro e Innovación</title>
-    <meta name="description"
-        content="Cassbriel Techology - Soluciones tecnológicas de vanguardia e innovación digital.">
+    <title>Cassbriel Technology | Seguridad e Innovación</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;900&family=Syncopate:wght@400;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Syncopate:wght@400;700&display=swap"
         rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -19,84 +17,169 @@
 </head>
 
 <body>
-    <div class="cursor-glow"></div>
 
-    <header>
-        <nav class="container">
-            <div class="logo">
-                <span class="logo-text">CASSBRIEL</span>
-                <span class="logo-suffix">TECH</span>
-            </div>
+    <!-- Navigation -->
+    <nav>
+        <div class="container nav-content">
+            <a href="#" class="main-logo">
+                <img src="logo.png" alt="Cassbriel Logo">
+                <div class="logo-text">CASSBRIEL <span>TECH</span></div>
+            </a>
             <ul class="nav-links">
-                <li><a href="#home" class="active">Inicio</a></li>
-                <li><a href="#services">Servicios</a></li>
-                <li><a href="#about">Nosotros</a></li>
-                <li><a href="#contact" class="btn-contact">Contacto</a></li>
+                <li><a href="#inicio" class="active">Inicio</a></li>
+                <li><a href="#servicios">Servicios</a></li>
+                <li><a href="#proyectos">Proyectos</a></li>
+                <li><a href="#contacto">Contacto</a></li>
             </ul>
-            <div class="menu-toggle">
-                <i class="fa-solid fa-bars-staggered"></i>
-            </div>
-        </nav>
-    </header>
+            <button class="admin-trigger" id="openAdmin">
+                <i class="fa-solid fa-user-shield"></i> Panel Maestro
+            </button>
+        </div>
+    </nav>
 
-    <main>
-        <section id="home" class="hero">
-            <div class="hero-bg">
-                <div class="grid-overlay"></div>
-                <div class="gradient-sphere"></div>
+    <!-- Hero Section -->
+    <section id="inicio" class="hero">
+        <div class="hero-particles"></div>
+        <div class="container hero-content">
+            <span class="badge-tech">SEGURIDAD & INNOVACIÓN DIGITAL</span>
+            <h1>Protegiendo el <span class="gradient-text">Futuro</span>, Optimizando el Presente.</h1>
+            <p>Especialistas en seguridad electrónica, infraestructura de red y soluciones de hardware a medida.
+                Innovamos para que tu tranquilidad no tenga límites.</p>
+            <div class="btn-group">
+                <button class="cta-primary">Presupuesto Gratis</button>
+                <a href="#servicios" class="cta-secondary">Nuestros Servicios</a>
             </div>
-            <div class="container hero-content">
-                <h2 class="sub-title">INNOVACIÓN SIN LÍMITES</h2>
-                <h1>Impulsando el <span>Mañana</span> Hoy.</h1>
-                <p>Especialistas en soluciones tecnológicas avanzadas, desarrollo de software a medida e integración de
-                    inteligencia artificial.</p>
-                <div class="hero-btns">
-                    <a href="#services" class="primary-btn">Explorar Soluciones</a>
-                    <a href="#about" class="secondary-btn">Saber Más</a>
-                </div>
-            </div>
-        </section>
+        </div>
+    </section>
 
-        <section id="services" class="services">
-            <div class="container">
-                <div class="section-header">
-                    <h2>Nuestros Servicios</h2>
-                    <p>Diseñamos el futuro con tecnología de precisión.</p>
-                </div>
-                <div class="services-grid">
-                    <div class="service-card">
-                        <i class="fa-solid fa-code"></i>
-                        <h3>Software Dev</h3>
-                        <p>Desarrollo de aplicaciones escalables y robustas.</p>
-                    </div>
-                    <div class="service-card">
-                        <i class="fa-solid fa-brain"></i>
-                        <h3>IA & Automización</h3>
-                        <p>Optimizamos tus procesos con algoritmos inteligentes.</p>
-                    </div>
-                    <div class="service-card">
-                        <i class="fa-solid fa-cloud"></i>
-                        <h3>Cloud Solutions</h3>
-                        <p>Infraestructura en la nube segura y eficiente.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <footer>
+    <!-- Services Section -->
+    <section id="servicios" class="services">
         <div class="container">
-            <div class="footer-content">
-                <div class="footer-logo">CASSBRIEL TECH</div>
-                <p>&copy; 2026 Cassbriel Techology. Todos los derechos reservados.</p>
-                <div class="social-links">
-                    <a href="#"><i class="fa-brands fa-linkedin"></i></a>
-                    <a href="#"><i class="fa-brands fa-github"></i></a>
-                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
+            <div class="section-head">
+                <span class="badge-tech">QUÉ HACEMOS</span>
+                <h2>Soluciones 360°</h2>
+            </div>
+            <div class="services-grid">
+                <!-- Service 1 -->
+                <div class="service-card">
+                    <div class="card-icon"><i class="fa-solid fa-video"></i></div>
+                    <h3>Cámaras de Seguridad</h3>
+                    <p>Venta e instalación de sistemas CCTV de alta definición. Monitoreo remoto y detección
+                        inteligente.</p>
+                </div>
+                <!-- Service 2 -->
+                <div class="service-card">
+                    <div class="card-icon"><i class="fa-solid fa-laptop-medical"></i></div>
+                    <h3>Soporte Técnico Especializado</h3>
+                    <p>Mantenimiento preventivo y correctivo de Laptops, Computadoras e Impresoras. Recuperación de
+                        datos.</p>
+                </div>
+                <!-- Service 3 -->
+                <div class="service-card">
+                    <div class="card-icon"><i class="fa-solid fa-tower-broadcast"></i></div>
+                    <h3>Radio Enlaces</h3>
+                    <p>Instalación de conectividad de largo alcance. Internet donde otros no llegan con tecnología
+                        estable.</p>
+                </div>
+                <!-- Service 4 -->
+                <div class="service-card">
+                    <div class="card-icon"><i class="fa-solid fa-network-wired"></i></div>
+                    <h3>Redes & Infraestructura</h3>
+                    <p>Diseño y montaje de cableado estructurado, redes WiFi corporativas y soluciones de conectividad.
+                    </p>
                 </div>
             </div>
         </div>
-    </footer>
+    </section>
+
+    <!-- Panel Maestro Overlay -->
+    <div class="panel-maestro" id="adminPanel">
+        <button class="close-panel" id="closeAdmin"><i class="fa-solid fa-xmark"></i></button>
+
+        <aside class="panel-sidebar">
+            <div class="sidebar-logo">DASHBOARD MAESTRO</div>
+            <ul class="sidebar-menu">
+                <li class="active" data-tab="resumen"><i class="fa-solid fa-chart-line"></i> <span>Resumen</span></li>
+                <li data-tab="productos"><i class="fa-solid fa-box-open"></i> <span>Productos/Servicios</span></li>
+                <li data-tab="contabilidad"><i class="fa-solid fa-money-bill-trend-up"></i> <span>Contabilidad</span>
+                </li>
+                <li data-tab="personal"><i class="fa-solid fa-users-gear"></i> <span>Personal</span></li>
+                <li data-tab="cotizaciones"><i class="fa-solid fa-file-invoice-dollar"></i> <span>Cotizaciones</span>
+                </li>
+                <li data-tab="config"><i class="fa-solid fa-gear"></i> <span>Configuración</span></li>
+            </ul>
+        </aside>
+
+        <main class="panel-content">
+            <div id="tab-resumen" class="admin-tab active">
+                <h2 style="margin-bottom: 2rem;">Estado General del Negocio</h2>
+                <div class="stat-grid">
+                    <div class="stat-box">
+                        <div class="stat-label">Ingresos Mensuales</div>
+                        <div class="stat-value">S/ 12,450.00</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Proyectos Activos</div>
+                        <div class="stat-value">8</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Personal en Campo</div>
+                        <div class="stat-value">4</div>
+                    </div>
+                    <div class="stat-box" style="border-color: var(--accent-green);">
+                        <div class="stat-label">Eficiencia Operativa</div>
+                        <div class="stat-value">98%</div>
+                    </div>
+                </div>
+
+                <div class="admin-table-container">
+                    <div style="padding: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="font-size: 0.8rem;">Últimos Movimientos</h3>
+                        <button class="admin-trigger" style="font-size: 0.6rem;">Ver Todo</button>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Cliente / Concepto</th>
+                                <th>Monto</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>01 Feb 2026</td>
+                                <td>Instalación Cámaras Residencial</td>
+                                <td style="color: var(--accent-green);">+ S/ 1,200</td>
+                                <td><span
+                                        style="padding: 4px 8px; background: rgba(50,255,126,0.1); color: var(--accent-green); border-radius: 4px; font-size: 0.7rem;">Completado</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>31 Ene 2026</td>
+                                <td>Compra de Insumos (Cables)</td>
+                                <td style="color: #ff4d4d;">- S/ 450</td>
+                                <td><span
+                                        style="padding: 4px 8px; background: rgba(255,77,77,0.1); color: #ff4d4d; border-radius: 4px; font-size: 0.7rem;">Pagado</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Other tabs are dynamically handled or hidden -->
+            <div id="tab-productos" class="admin-tab" style="display: none;">
+                <h2>Gestión de Inventario</h2>
+                <p style="color: var(--text-muted);">Módulo de control de existencias y catálogo web.</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Floating UI -->
+    <a href="https://wa.me/51900000000" class="whatsapp-float" target="_blank">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
 
     <script src="script.js"></script>
 </body>
