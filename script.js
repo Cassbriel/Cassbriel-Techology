@@ -1,8 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     // ---------------------------------------------------------
-    // 1. DATABASE SYSTEM (LOCALSTORAGE)
+    // 1. SISTEMA DE BASE DE DATOS (LIVING DB)
     // ---------------------------------------------------------
-    const DB_KEY = 'cassbriel_master_db_v3';
+    const DB_KEY = 'cassbriel_master_ultra_v4'; // Nueva versión para asegurar limpieza
     let db = JSON.parse(localStorage.getItem(DB_KEY)) || {
         users: [
             { id: 1, user: 'Hector', pass: 'Cassiel@123', role: 'admin', perms: ['edit_web', 'view_money', 'manage_users'] }
@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateFrontend() {
-        // Website Sync
+        // Sincronización con la Web Pública
         const heroH1 = document.querySelector('.hero h1');
         const heroP = document.querySelector('.hero p');
         const waLink = document.querySelector('.whatsapp-float');
@@ -36,16 +36,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (heroP) heroP.textContent = db.content.heroDesc;
         if (waLink) waLink.href = `https://wa.me/${db.content.whatsapp}`;
 
-        // Admin Fields Sync
+        // Sincronización con los inputs del Panel (si están abiertos)
         const editTitle = document.getElementById('edit-hero-title');
         const editDesc = document.getElementById('edit-hero-desc');
         const editWa = document.getElementById('edit-whatsapp');
 
-        if (editTitle) editTitle.value = db.content.heroTitle.replace(/<[^>]*>?/gm, ''); // Clean HTML for input
+        if (editTitle) editTitle.value = db.content.heroTitle.replace(/<[^>]*>?/gm, '');
         if (editDesc) editDesc.value = db.content.heroDesc;
         if (editWa) editWa.value = db.content.whatsapp;
 
-        // Render Admin Sections
+        // Renderizar Tablas
         renderUsers();
         renderProducts();
         updateStats();
@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ---------------------------------------------------------
-    // 2. AUTH & PERMISSIONS
+    // 2. AUTENTICACIÓN Y ACCESO
     // ---------------------------------------------------------
     let currentUser = null;
 
@@ -78,13 +78,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const adminPanel = document.getElementById('adminPanel');
     const loginError = document.getElementById('loginError');
 
-    // Open Login
+    // Botón principal de "Ingresa"
     document.getElementById('openAdmin')?.addEventListener('click', () => {
         loginOverlay.classList.add('active');
         document.body.style.overflow = 'hidden';
     });
 
-    // Close Login
+    // Cancelar Login
     document.getElementById('closeLogin')?.addEventListener('click', () => {
         loginOverlay.classList.remove('active');
         document.body.style.overflow = 'auto';
@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loginForm.reset();
     });
 
-    // Login Action
+    // Procesar Login
     loginForm?.addEventListener('submit', (e) => {
         e.preventDefault();
         const u = document.getElementById('username').value;
@@ -108,6 +108,8 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 adminPanel.classList.add('active');
                 updateFrontend();
+                // Forzar ir a la tab por defecto (Resumen)
+                document.querySelector('[data-tab="resumen"]').click();
             }, 10);
             loginForm.reset();
         } else {
@@ -140,17 +142,39 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ---------------------------------------------------------
-    // 3. ADMIN ACTIONS
+    // 3. CAPACIDAD DE ADMINISTRACIÓN (TABS)
     // ---------------------------------------------------------
 
-    // Web Content Save
+    // Cambio de Pestañas
+    document.querySelectorAll('.sidebar-menu li').forEach(item => {
+        item.addEventListener('click', function () {
+            const tabId = this.getAttribute('data-tab');
+
+            // UI Sidebar
+            document.querySelectorAll('.sidebar-menu li').forEach(i => i.classList.remove('active'));
+            this.classList.add('active');
+
+            // UI Contenido
+            document.querySelectorAll('.admin-tab').forEach(t => {
+                t.classList.remove('active');
+                t.style.display = 'none';
+            });
+
+            const target = document.getElementById(`tab-${tabId}`);
+            if (target) {
+                target.style.display = 'block';
+                setTimeout(() => target.classList.add('active'), 10);
+            }
+        });
+    });
+
+    // Guardar Diseño Web
     document.getElementById('save-web-content')?.addEventListener('click', () => {
         if (!currentUser.perms.includes('edit_web')) return alert('No tienes permisos.');
 
         let title = document.getElementById('edit-hero-title').value;
-        // Re-inject gradient span if it looks like it was removed
         if (!title.includes('<span')) {
-            title = title.replace('Futuro', '<span class="gradient-text">Futuro</span>');
+            title = title.replace('Futuro', '<span class=\"gradient-text\">Futuro</span>');
         }
 
         db.content.heroTitle = title;
@@ -158,20 +182,20 @@ document.addEventListener('DOMContentLoaded', () => {
         db.content.whatsapp = document.getElementById('edit-whatsapp').value;
 
         saveDB();
-        alert('Cambios guardados con éxito.');
+        alert('Contenido actualizado correctamente.');
     });
 
-    // Products Management
+    // Gestión de Productos
     function renderProducts() {
         const list = document.getElementById('product-list-admin');
         if (!list) return;
         list.innerHTML = db.products.map(p => `
             <tr>
-                <td><i class="fa-solid fa-box-open" style="color: var(--primary-blue)"></i></td>
+                <td><i class="fa-solid fa-box-open" style="color: #00a8ff"></i></td>
                 <td><strong>${p.name}</strong></td>
                 <td>S/ ${p.price.toFixed(2)}</td>
                 <td><span class="badge-role admin">${p.stock}</span></td>
-                <td><button class="btn-delete" onclick="deleteProduct(${p.id})"><i class="fa-solid fa-trash"></i></button></td>
+                <td><button class="btn-delete" onclick="window.deleteProduct(${p.id})"><i class="fa-solid fa-trash"></i></button></td>
             </tr>
         `).join('');
     }
@@ -198,7 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.target.reset();
     });
 
-    // Accounting Management
+    // Gestión de Contabilidad (Registrar)
     document.getElementById('accounting-form')?.addEventListener('submit', (e) => {
         e.preventDefault();
         if (!currentUser.perms.includes('view_money')) return alert('No tienes permisos.');
@@ -215,7 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
         alert('Movimiento de caja registrado.');
     });
 
-    // User Management
+    // Gestión de Usuarios
     function renderUsers() {
         const list = document.getElementById('users-list');
         if (!list) return;
@@ -224,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td><strong>${u.user}</strong></td>
                 <td><span class="badge-role ${u.role}">${u.role}</span></td>
                 <td><small>${u.perms.join(', ')}</small></td>
-                <td>${u.user !== 'Hector' ? `<button class="btn-delete" onclick="deleteUser(${u.id})"><i class="fa-solid fa-trash"></i></button>` : '<i class="fa-solid fa-lock" title="Sistema"></i>'}</td>
+                <td>${u.user !== 'Hector' ? `<button class="btn-delete" onclick="window.deleteUser(${u.id})"><i class="fa-solid fa-trash"></i></button>` : '<i class="fa-solid fa-lock"></i>'}</td>
             </tr>
         `).join('');
     }
@@ -254,7 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.target.reset();
     });
 
-    // Navigation Logic
+    // Cerrar Panel (Logout)
     document.getElementById('closeAdmin')?.addEventListener('click', () => {
         adminPanel.classList.remove('active');
         setTimeout(() => adminPanel.style.display = 'none', 500);
@@ -262,51 +286,39 @@ document.addEventListener('DOMContentLoaded', () => {
         currentUser = null;
     });
 
-    document.querySelectorAll('.sidebar-menu li').forEach(item => {
-        item.addEventListener('click', () => {
-            const tabId = item.getAttribute('data-tab');
-            document.querySelectorAll('.sidebar-menu li').forEach(i => i.classList.remove('active'));
-            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-
-            item.classList.add('active');
-            const target = document.getElementById(`tab-${tabId}`);
-            if (target) target.classList.add('active');
+    // ---------------------------------------------------------
+    // 4. FRONTEND UX (SCROLL & ANIMATIONS)
+    // ---------------------------------------------------------
+    window.addEventListener('scroll', () => {
+        const navLinks = document.querySelectorAll('.nav-links a');
+        let current = '';
+        document.querySelectorAll('section').forEach(section => {
+            if (pageYOffset >= section.offsetTop - 100) {
+                current = section.getAttribute('id');
+            }
+        });
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href').includes(current)) link.classList.add('active');
         });
     });
 
-    // Initial Load
+    const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.service-card').forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        card.style.transition = 'all 0.6s ease-out';
+        revealObserver.observe(card);
+    });
+
+    // Carga inicial
     updateFrontend();
-});
-
-// ---------------------------------------------------------
-// 4. FRONTEND INTERACTIVITY (SCROLL & ANIM)
-// ---------------------------------------------------------
-window.addEventListener('scroll', () => {
-    const navLinks = document.querySelectorAll('.nav-links a');
-    let current = '';
-    document.querySelectorAll('section').forEach(section => {
-        if (pageYOffset >= section.offsetTop - 100) {
-            current = section.getAttribute('id');
-        }
-    });
-    navLinks.forEach(link => {
-        link.classList.remove('active');
-        if (link.getAttribute('href').includes(current)) link.classList.add('active');
-    });
-});
-
-const revealObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.style.opacity = '1';
-            entry.target.style.transform = 'translateY(0)';
-        }
-    });
-}, { threshold: 0.1 });
-
-document.querySelectorAll('.service-card').forEach(card => {
-    card.style.opacity = '0';
-    card.style.transform = 'translateY(30px)';
-    card.style.transition = 'all 0.6s ease-out';
-    revealObserver.observe(card);
 });
