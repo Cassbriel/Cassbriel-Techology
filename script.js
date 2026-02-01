@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ---------------------------------------------------------
     // 1. SISTEMA DE BASE DE DATOS (LIVING DB)
     // ---------------------------------------------------------
-    const DB_KEY = 'cassbriel_master_ultra_v4'; // Nueva versión para asegurar limpieza
+    const DB_KEY = 'cassbriel_master_ultra_v5';
     let db = JSON.parse(localStorage.getItem(DB_KEY)) || {
         users: [
             { id: 1, user: 'Hector', pass: 'Cassiel@123', role: 'admin', perms: ['edit_web', 'view_money', 'manage_users'] }
@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
             heroDesc: 'Especialistas en seguridad electrónica, infraestructura de red y soluciones de hardware a medida. Innovamos para que tu tranquilidad no tenga límites.',
             whatsapp: '51900000000'
         },
+        categories: ['Seguridad', 'Cómputo', 'Redes', 'Impresoras', 'Otros'],
         products: [
             { id: 1, name: 'Cámara IP Hikvision 4MP', category: 'Seguridad', price: 250, stock: 15 },
             { id: 2, name: 'Repetidor WiFi TP-Link', category: 'Redes', price: 85, stock: 24 }
@@ -36,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (heroP) heroP.textContent = db.content.heroDesc;
         if (waLink) waLink.href = `https://wa.me/${db.content.whatsapp}`;
 
-        // Sincronización con los inputs del Panel (si están abiertos)
+        // Sincronización con los inputs del Panel
         const editTitle = document.getElementById('edit-hero-title');
         const editDesc = document.getElementById('edit-hero-desc');
         const editWa = document.getElementById('edit-whatsapp');
@@ -45,9 +46,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (editDesc) editDesc.value = db.content.heroDesc;
         if (editWa) editWa.value = db.content.whatsapp;
 
-        // Renderizar Tablas
+        // Renderizar Todo
         renderUsers();
         renderProducts();
+        renderCategories();
+        syncCategorySelects();
         updateStats();
     }
 
@@ -78,13 +81,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const adminPanel = document.getElementById('adminPanel');
     const loginError = document.getElementById('loginError');
 
-    // Botón principal de "Ingresa"
     document.getElementById('openAdmin')?.addEventListener('click', () => {
         loginOverlay.classList.add('active');
         document.body.style.overflow = 'hidden';
     });
 
-    // Cancelar Login
     document.getElementById('closeLogin')?.addEventListener('click', () => {
         loginOverlay.classList.remove('active');
         document.body.style.overflow = 'auto';
@@ -92,12 +93,10 @@ document.addEventListener('DOMContentLoaded', () => {
         loginForm.reset();
     });
 
-    // Procesar Login
     loginForm?.addEventListener('submit', (e) => {
         e.preventDefault();
         const u = document.getElementById('username').value;
         const p = document.getElementById('password').value;
-
         const found = db.users.find(user => user.user === u && user.pass === p);
 
         if (found) {
@@ -108,7 +107,6 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 adminPanel.classList.add('active');
                 updateFrontend();
-                // Forzar ir a la tab por defecto (Resumen)
                 document.querySelector('[data-tab="resumen"]').click();
             }, 10);
             loginForm.reset();
@@ -136,7 +134,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 tab.style.display = 'flex';
             }
         });
-
         const btnAddUser = document.getElementById('btn-add-user');
         if (btnAddUser) btnAddUser.style.display = currentUser.role === 'admin' ? 'block' : 'none';
     }
@@ -145,21 +142,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // 3. CAPACIDAD DE ADMINISTRACIÓN (TABS)
     // ---------------------------------------------------------
 
-    // Cambio de Pestañas
     document.querySelectorAll('.sidebar-menu li').forEach(item => {
         item.addEventListener('click', function () {
             const tabId = this.getAttribute('data-tab');
-
-            // UI Sidebar
             document.querySelectorAll('.sidebar-menu li').forEach(i => i.classList.remove('active'));
             this.classList.add('active');
-
-            // UI Contenido
             document.querySelectorAll('.admin-tab').forEach(t => {
                 t.classList.remove('active');
                 t.style.display = 'none';
             });
-
             const target = document.getElementById(`tab-${tabId}`);
             if (target) {
                 target.style.display = 'block';
@@ -171,21 +162,63 @@ document.addEventListener('DOMContentLoaded', () => {
     // Guardar Diseño Web
     document.getElementById('save-web-content')?.addEventListener('click', () => {
         if (!currentUser.perms.includes('edit_web')) return alert('No tienes permisos.');
-
         let title = document.getElementById('edit-hero-title').value;
-        if (!title.includes('<span')) {
-            title = title.replace('Futuro', '<span class=\"gradient-text\">Futuro</span>');
-        }
-
+        if (!title.includes('<span')) title = title.replace('Futuro', '<span class=\"gradient-text\">Futuro</span>');
         db.content.heroTitle = title;
         db.content.heroDesc = document.getElementById('edit-hero-desc').value;
         db.content.whatsapp = document.getElementById('edit-whatsapp').value;
-
         saveDB();
         alert('Contenido actualizado correctamente.');
     });
 
-    // Gestión de Productos
+    // ---------------------------------------------------------
+    // 4. CATEGORÍAS MANAGEMENT
+    // ---------------------------------------------------------
+    function renderCategories() {
+        const list = document.getElementById('category-list-admin');
+        if (!list) return;
+        list.innerHTML = db.categories.map((cat, index) => {
+            const productCount = db.products.filter(p => p.category === cat).length;
+            return `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td><strong>${cat}</strong></td>
+                    <td><span class="badge-role admin">${productCount} Artículos</span></td>
+                    <td>
+                        <button class="btn-delete" onclick="window.deleteCategory('${cat}')" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function syncCategorySelects() {
+        const select = document.getElementById('p-category');
+        if (!select) return;
+        const currentVal = select.value;
+        select.innerHTML = db.categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+        if (db.categories.includes(currentVal)) select.value = currentVal;
+    }
+
+    document.getElementById('btn-add-category')?.addEventListener('click', () => {
+        const input = document.getElementById('new-cat-name');
+        const name = input.value.trim();
+        if (!name) return;
+        if (db.categories.includes(name)) return alert('La categoría ya existe.');
+        db.categories.push(name);
+        input.value = '';
+        saveDB();
+    });
+
+    window.deleteCategory = (name) => {
+        if (!confirm(`¿Seguro que deseas eliminar la categoría "${name}"? Los productos vinculados quedarán sin categoría.`)) return;
+        db.categories = db.categories.filter(c => c !== name);
+        saveDB();
+    };
+
+    // ---------------------------------------------------------
+    // 5. PRODUCTOS MANAGEMENT
+    // ---------------------------------------------------------
     function renderProducts() {
         const list = document.getElementById('product-list-admin');
         if (!list) return;
@@ -194,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td><i class="fa-solid fa-box-open" style="color: #00a8ff"></i></td>
                 <td><strong>${p.name}</strong></td>
                 <td><span class="badge-role staff" style="font-size: 0.7rem;">${p.category || 'Sin Cat.'}</span></td>
-                <td>S/ ${p.price.toFixed(2)}</td>
+                <td>S/ ${parseFloat(p.price).toFixed(2)}</td>
                 <td><span class="badge-role admin">${p.stock}</span></td>
                 <td><button class="btn-delete" onclick="window.deleteProduct(${p.id})"><i class="fa-solid fa-trash"></i></button></td>
             </tr>
@@ -224,11 +257,12 @@ document.addEventListener('DOMContentLoaded', () => {
         e.target.reset();
     });
 
-    // Gestión de Contabilidad (Registrar)
+    // ---------------------------------------------------------
+    // 6. CONTABILIDAD & USUARIOS
+    // ---------------------------------------------------------
     document.getElementById('accounting-form')?.addEventListener('submit', (e) => {
         e.preventDefault();
         if (!currentUser.perms.includes('view_money')) return alert('No tienes permisos.');
-
         db.movements.push({
             id: Date.now(),
             concept: document.getElementById('acc-concept').value,
@@ -238,10 +272,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         saveDB();
         e.target.reset();
-        alert('Movimiento de caja registrado.');
+        alert('Movimiento registrado.');
     });
 
-    // Gestión de Usuarios
     function renderUsers() {
         const list = document.getElementById('users-list');
         if (!list) return;
@@ -268,19 +301,12 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('newUserForm')?.addEventListener('submit', (e) => {
         e.preventDefault();
         const perms = Array.from(document.querySelectorAll('input[name="perm"]:checked')).map(cb => cb.value);
-        db.users.push({
-            id: Date.now(),
-            user: document.getElementById('new-username').value,
-            pass: document.getElementById('new-password').value,
-            role: document.getElementById('new-role').value,
-            perms: perms
-        });
+        db.users.push({ id: Date.now(), user: document.getElementById('new-username').value, pass: document.getElementById('new-password').value, role: document.getElementById('new-role').value, perms: perms });
         saveDB();
         uModal.classList.remove('active');
         e.target.reset();
     });
 
-    // Cerrar Panel (Logout)
     document.getElementById('closeAdmin')?.addEventListener('click', () => {
         adminPanel.classList.remove('active');
         setTimeout(() => adminPanel.style.display = 'none', 500);
@@ -288,39 +314,16 @@ document.addEventListener('DOMContentLoaded', () => {
         currentUser = null;
     });
 
-    // ---------------------------------------------------------
-    // 4. FRONTEND UX (SCROLL & ANIMATIONS)
-    // ---------------------------------------------------------
+    // Otros UX
     window.addEventListener('scroll', () => {
         const navLinks = document.querySelectorAll('.nav-links a');
         let current = '';
-        document.querySelectorAll('section').forEach(section => {
-            if (pageYOffset >= section.offsetTop - 100) {
-                current = section.getAttribute('id');
-            }
-        });
-        navLinks.forEach(link => {
-            link.classList.remove('active');
-            if (link.getAttribute('href').includes(current)) link.classList.add('active');
-        });
+        document.querySelectorAll('section').forEach(section => { if (pageYOffset >= section.offsetTop - 100) current = section.getAttribute('id'); });
+        navLinks.forEach(link => { link.classList.remove('active'); if (link.getAttribute('href').includes(current)) link.classList.add('active'); });
     });
 
-    const revealObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
-            }
-        });
-    }, { threshold: 0.1 });
+    const revealObserver = new IntersectionObserver((entries) => { entries.forEach(entry => { if (entry.isIntersecting) { entry.target.style.opacity = '1'; entry.target.style.transform = 'translateY(0)'; } }); }, { threshold: 0.1 });
+    document.querySelectorAll('.service-card').forEach(card => { card.style.opacity = '0'; card.style.transform = 'translateY(30px)'; card.style.transition = 'all 0.6s ease-out'; revealObserver.observe(card); });
 
-    document.querySelectorAll('.service-card').forEach(card => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(30px)';
-        card.style.transition = 'all 0.6s ease-out';
-        revealObserver.observe(card);
-    });
-
-    // Carga inicial
     updateFrontend();
 });
