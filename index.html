@@ -125,81 +125,121 @@
         <aside class="panel-sidebar">
             <div class="sidebar-logo">CONTROL MAESTRO</div>
             <ul class="sidebar-menu">
-                <li class="active" data-tab="resumen"><i class="fa-solid fa-chart-line"></i> <span>Resumen</span></li>
-                <li data-tab="productos"><i class="fa-solid fa-box-open"></i> <span>Productos/Servicios</span></li>
+                <li data-tab="resumen"><i class="fa-solid fa-chart-line"></i> <span>Resumen</span></li>
+                <li data-tab="diseno"><i class="fa-solid fa-pen-nib"></i> <span>Diseño Web</span></li>
+                <li data-tab="productos"><i class="fa-solid fa-box-open"></i> <span>Productos</span></li>
+                <li data-tab="usuarios"><i class="fa-solid fa-users-gear"></i> <span>Usuarios & Permisos</span></li>
                 <li data-tab="contabilidad"><i class="fa-solid fa-money-bill-trend-up"></i> <span>Contabilidad</span>
                 </li>
-                <li data-tab="personal"><i class="fa-solid fa-users-gear"></i> <span>Personal</span></li>
-                <li data-tab="cotizaciones"><i class="fa-solid fa-file-invoice-dollar"></i> <span>Cotizaciones</span>
-                </li>
-                <li data-tab="config"><i class="fa-solid fa-gear"></i> <span>Configuración</span></li>
+                <li data-tab="config" class="active"><i class="fa-solid fa-gear"></i> <span>Configuración</span></li>
             </ul>
         </aside>
 
         <main class="panel-content">
-            <div id="tab-resumen" class="admin-tab active">
-                <h2 style="margin-bottom: 2rem;">Estado General del Negocio</h2>
+            <!-- TAB: RESUMEN (Existing but improved) -->
+            <div id="tab-resumen" class="admin-tab">
+                <h2 class="tab-title">Estado General</h2>
                 <div class="stat-grid">
                     <div class="stat-box">
-                        <div class="stat-label">Ingresos Mensuales</div>
-                        <div class="stat-value">S/ 12,450.00</div>
+                        <div class="stat-label">Ingresos</div>
+                        <div class="stat-value" id="stat-ingresos">S/ 0.00</div>
                     </div>
                     <div class="stat-box">
-                        <div class="stat-label">Proyectos Activos</div>
-                        <div class="stat-value">8</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-label">Personal en Campo</div>
-                        <div class="stat-value">4</div>
-                    </div>
-                    <div class="stat-box" style="border-color: var(--accent-green);">
-                        <div class="stat-label">Eficiencia Operativa</div>
-                        <div class="stat-value">98%</div>
+                        <div class="stat-label">Usuarios Activos</div>
+                        <div class="stat-value" id="stat-usuarios">1</div>
                     </div>
                 </div>
+            </div>
 
-                <div class="admin-table-container">
-                    <div style="padding: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
-                        <h3 style="font-size: 0.8rem;">Últimos Movimientos</h3>
-                        <button class="admin-trigger" style="font-size: 0.6rem;">Ver Todo</button>
+            <!-- TAB: DISEÑO WEB (EDITABLE CONTENT) -->
+            <div id="tab-diseno" class="admin-tab">
+                <h2 class="tab-title">Editor de Contenido Web</h2>
+                <div class="admin-card">
+                    <h3>Sección Hero (Inicio)</h3>
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label>Título Principal</label>
+                            <input type="text" id="edit-hero-title" placeholder="Protegiendo el Futuro...">
+                        </div>
+                        <div class="input-group">
+                            <label>Descripción</label>
+                            <textarea id="edit-hero-desc" rows="3"></textarea>
+                        </div>
+                        <div class="input-group">
+                            <label>Número de WhatsApp</label>
+                            <input type="text" id="edit-whatsapp" placeholder="51900000000">
+                        </div>
                     </div>
-                    <table>
+                    <button class="cta-primary" id="save-web-content">Guardar Cambios Visuales</button>
+                </div>
+            </div>
+
+            <!-- TAB: USUARIOS & PERMISOS -->
+            <div id="tab-usuarios" class="admin-tab">
+                <div class="tab-header-flex">
+                    <h2 class="tab-title">Gestión de Personal</h2>
+                    <button class="admin-trigger" id="btn-add-user"><i class="fa-solid fa-plus"></i> Nuevo
+                        Usuario</button>
+                </div>
+                <div class="admin-table-container">
+                    <table id="users-table">
                         <thead>
                             <tr>
-                                <th>Fecha</th>
-                                <th>Cliente / Concepto</th>
-                                <th>Monto</th>
-                                <th>Estado</th>
+                                <th>Usuario</th>
+                                <th>Rol</th>
+                                <th>Permisos</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td>01 Feb 2026</td>
-                                <td>Instalación Cámaras Residencial</td>
-                                <td style="color: var(--accent-green);">+ S/ 1,200</td>
-                                <td><span
-                                        style="padding: 4px 8px; background: rgba(50,255,126,0.1); color: var(--accent-green); border-radius: 4px; font-size: 0.7rem;">Completado</span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>31 Ene 2026</td>
-                                <td>Compra de Insumos (Cables)</td>
-                                <td style="color: #ff4d4d;">- S/ 450</td>
-                                <td><span
-                                        style="padding: 4px 8px; background: rgba(255,77,77,0.1); color: #ff4d4d; border-radius: 4px; font-size: 0.7rem;">Pagado</span>
-                                </td>
-                            </tr>
+                        <tbody id="users-list">
+                            <!-- Injected by JS -->
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Other tabs are dynamically handled or hidden -->
-            <div id="tab-productos" class="admin-tab" style="display: none;">
-                <h2>Gestión de Inventario</h2>
-                <p style="color: var(--text-muted);">Módulo de control de existencias y catálogo web.</p>
+            <!-- TAB: CONFIGURACION (Existing active by default for now) -->
+            <div id="tab-config" class="admin-tab active">
+                <h2 class="tab-title">Configuración del Sistema</h2>
+                <div class="admin-card">
+                    <p>Bienvenido al Sistema de Control Maestro. Seleccione una pestaña a la izquierda para comenzar a
+                        editar.</p>
+                </div>
             </div>
         </main>
+    </div>
+
+    <!-- Modal: Nuevo Usuario -->
+    <div class="login-overlay" id="userModal">
+        <div class="login-card" style="max-width: 500px;">
+            <h3>Configurar Nuevo Usuario</h3>
+            <form id="newUserForm">
+                <div class="input-group">
+                    <label>Nombre de Usuario</label>
+                    <input type="text" id="new-username" required>
+                </div>
+                <div class="input-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="new-password" required>
+                </div>
+                <div class="input-group">
+                    <label>Rol del Usuario</label>
+                    <select id="new-role" class="styled-select">
+                        <option value="staff">Personal (Solo Lectura/Edición Limitada)</option>
+                        <option value="admin">Administrador (Control Total)</option>
+                    </select>
+                </div>
+                <div class="permissions-list">
+                    <label><input type="checkbox" name="perm" value="edit_web"> Editar Web</label>
+                    <label><input type="checkbox" name="perm" value="view_money"> Ver Contabilidad</label>
+                    <label><input type="checkbox" name="perm" value="manage_users"> Gestionar Usuarios</label>
+                </div>
+                <div style="display: flex; gap:10px; margin-top: 2rem;">
+                    <button type="submit" class="cta-primary" style="flex:1">Crear Acceso</button>
+                    <button type="button" class="cta-secondary" id="closeUserModal">Cancelar</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Floating UI -->
