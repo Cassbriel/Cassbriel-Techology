@@ -198,7 +198,97 @@
                 </div>
             </div>
 
-            <!-- TAB: CONFIGURACION (Existing active by default for now) -->
+            <!-- TAB: PRODUCTOS -->
+            <div id="tab-productos" class="admin-tab">
+                <div class="tab-header-flex">
+                    <h2 class="tab-title">Gestión de Catálogo</h2>
+                    <button class="admin-trigger" id="btn-add-product"><i class="fa-solid fa-plus"></i> Nuevo
+                        Producto</button>
+                </div>
+                <div class="admin-table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Imagen</th>
+                                <th>Producto</th>
+                                <th>Precio (S/)</th>
+                                <th>Stock</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="product-list-admin">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB: CONTABILIDAD -->
+            <div id="tab-contabilidad" class="admin-tab">
+                <h2 class="tab-title">Caja y Contabilidad</h2>
+                <div class="stat-grid">
+                    <div class="stat-box" style="border-left: 4px solid var(--accent-green);">
+                        <div class="stat-label">Ingresos Totales</div>
+                        <div class="stat-value" id="total-income">S/ 0.00</div>
+                    </div>
+                    <div class="stat-box" style="border-left: 4px solid #ff4d4d;">
+                        <div class="stat-label">Salidas (Gastos)</div>
+                        <div class="stat-value" id="total-expense">S/ 0.00</div>
+                    </div>
+                </div>
+                <div class="admin-card">
+                    <h3>Registrar Movimiento</h3>
+                    <form id="accounting-form" class="form-grid">
+                        <div class="input-group">
+                            <label>Concepto</label>
+                            <input type="text" id="acc-concept" placeholder="Ej: Venta de Cámara IP" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Monto</label>
+                            <input type="number" id="acc-amount" step="0.01" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Tipo</label>
+                            <select id="acc-type" class="styled-select">
+                                <option value="ingreso">Ingreso (+)</option>
+                                <option value="salida">Salida (-)</option>
+                            </select>
+                        </div>
+                        <div class="input-group" style="display: flex; align-items: flex-end;">
+                            <button type="submit" class="cta-primary" style="width: 100%;">Registrar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- TAB: COTIZACIONES -->
+            <div id="tab-cotizaciones" class="admin-tab">
+                <h2 class="tab-title">Cotizaciones Pendientes</h2>
+                <div class="admin-table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Servicio</th>
+                                <th>WhatsApp</th>
+                                <th>Fecha</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="quotes-list-admin">
+                            <tr>
+                                <td>Juan Perez</td>
+                                <td>Instalación CCTV</td>
+                                <td>987654321</td>
+                                <td>01/02/2026</td>
+                                <td><span class="badge-role admin">Pendiente</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB: CONFIGURACION -->
             <div id="tab-config" class="admin-tab active">
                 <h2 class="tab-title">Configuración del Sistema</h2>
                 <div class="admin-card">
@@ -237,6 +327,31 @@
                 <div style="display: flex; gap:10px; margin-top: 2rem;">
                     <button type="submit" class="cta-primary" style="flex:1">Crear Acceso</button>
                     <button type="button" class="cta-secondary" id="closeUserModal">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Nuevo Producto -->
+    <div class="login-overlay" id="productModal">
+        <div class="login-card">
+            <h3>Registrar Nuevo Producto</h3>
+            <form id="newProductForm">
+                <div class="input-group">
+                    <label>Nombre del Producto</label>
+                    <input type="text" id="p-name" required>
+                </div>
+                <div class="input-group">
+                    <label>Precio (S/)</label>
+                    <input type="number" id="p-price" step="0.01" required>
+                </div>
+                <div class="input-group">
+                    <label>Stock Inicial</label>
+                    <input type="number" id="p-stock" required>
+                </div>
+                <div style="display: flex; gap:10px; margin-top: 2rem;">
+                    <button type="submit" class="cta-primary" style="flex:1">Guardar</button>
+                    <button type="button" class="cta-secondary" id="closeProductModal">Cancelar</button>
                 </div>
             </form>
         </div>
