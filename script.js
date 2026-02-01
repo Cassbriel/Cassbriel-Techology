@@ -13,8 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
             whatsapp: '51900000000'
         },
         products: [
-            { id: 1, name: 'Cámara IP Hikvision 4MP', price: 250, stock: 15 },
-            { id: 2, name: 'Repetidor WiFi TP-Link', price: 85, stock: 24 }
+            { id: 1, name: 'Cámara IP Hikvision 4MP', category: 'Seguridad', price: 250, stock: 15 },
+            { id: 2, name: 'Repetidor WiFi TP-Link', category: 'Redes', price: 85, stock: 24 }
         ],
         movements: [
             { id: 1, concept: 'Saldo Inicial', amount: 12450.00, type: 'ingreso', date: '01/02/2026' }
@@ -193,6 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <tr>
                 <td><i class="fa-solid fa-box-open" style="color: #00a8ff"></i></td>
                 <td><strong>${p.name}</strong></td>
+                <td><span class="badge-role staff" style="font-size: 0.7rem;">${p.category || 'Sin Cat.'}</span></td>
                 <td>S/ ${p.price.toFixed(2)}</td>
                 <td><span class="badge-role admin">${p.stock}</span></td>
                 <td><button class="btn-delete" onclick="window.deleteProduct(${p.id})"><i class="fa-solid fa-trash"></i></button></td>
@@ -214,6 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
         db.products.push({
             id: Date.now(),
             name: document.getElementById('p-name').value,
+            category: document.getElementById('p-category').value,
             price: parseFloat(document.getElementById('p-price').value),
             stock: parseInt(document.getElementById('p-stock').value)
         });
