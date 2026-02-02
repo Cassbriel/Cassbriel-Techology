@@ -17,7 +17,12 @@ document.addEventListener('DOMContentLoaded', () => {
             { id: 1, name: 'Cámara IP Hikvision 4MP', category: 'Seguridad', price: 250, stock: 15 },
             { id: 2, name: 'Repetidor WiFi TP-Link', category: 'Redes', price: 85, stock: 24 }
         ],
-        movements: []
+        movements: [],
+        projects: [
+            { id: 1, title: 'Monitoreo Residencial Ultra HD', category: 'Seguridad CCTV', desc: 'Instalación de 16 cámaras IP con sistema de analítica inteligente para Urbanización Privada.', img: 'https://images.unsplash.com/photo-1557597774-9d2739f85a94?q=80' },
+            { id: 2, title: 'Cableado Estructurado Empresarial', category: 'Infraestructura', desc: 'Implementación de red nivel 7 para oficinas corporativas, permitiendo alta velocidad y estabilidad.', img: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc51?q=80' },
+            { id: 3, title: 'Renovación Tecnológica Completa', category: 'Soporte Técnico', desc: 'Mantenimiento y repotenciación de 50 laptops corporativas con optimización de hardware.', img: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80' }
+        ]
     };
 
     function saveDB() {
@@ -35,6 +40,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (heroP) heroP.textContent = db.content.heroDesc;
         if (waLink) waLink.href = `https://wa.me/${db.content.whatsapp}`;
 
+        renderPublicProjects();
+
         // Sincronización con los inputs del Panel
         const editTitle = document.getElementById('edit-hero-title');
         const editDesc = document.getElementById('edit-hero-desc');
@@ -48,8 +55,27 @@ document.addEventListener('DOMContentLoaded', () => {
         renderUsers();
         renderProducts();
         renderCategories();
+        renderAdminProjects();
         syncCategorySelects();
         updateStats();
+    }
+
+    function renderPublicProjects() {
+        const container = document.querySelector('.projects-grid');
+        if (!container) return;
+        container.innerHTML = db.projects.map(p => `
+            <div class="project-card">
+                <img src="${p.img}" alt="${p.title}">
+                <div class="project-overlay">
+                    <div class="project-info">
+                        <span class="project-cat">${p.category}</span>
+                        <h3>${p.title}</h3>
+                        <p>${p.desc}</p>
+                        <a href="#" class="project-link"><i class="fa-solid fa-arrow-right-long"></i> Ver Detalles</a>
+                    </div>
+                </div>
+            </div>
+        `).join('');
     }
 
     function updateStats() {
@@ -320,8 +346,21 @@ document.addEventListener('DOMContentLoaded', () => {
         navLinks.forEach(link => { link.classList.remove('active'); if (link.getAttribute('href').includes(current)) link.classList.add('active'); });
     });
 
-    const revealObserver = new IntersectionObserver((entries) => { entries.forEach(entry => { if (entry.isIntersecting) { entry.target.style.opacity = '1'; entry.target.style.transform = 'translateY(0)'; } }); }, { threshold: 0.1 });
-    document.querySelectorAll('.service-card').forEach(card => { card.style.opacity = '0'; card.style.transform = 'translateY(30px)'; card.style.transition = 'all 0.6s ease-out'; revealObserver.observe(card); });
+    const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.service-card, .project-card, .method-item, .contact-glass-form').forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(30px)';
+        el.style.transition = 'all 0.6s ease-out';
+        revealObserver.observe(el);
+    });
 
     // ---------------------------------------------------------
     // 7. COTIZACIÓN GRATIS MODAL LOGIC
