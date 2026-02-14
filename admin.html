@@ -526,8 +526,8 @@
             <p class="nav-label">Infraestructura Web</p>
             <div class="nav-item" onclick="switchSection('web-config')"><i class="fas fa-globe"></i> Config Global</div>
             <div class="nav-item" onclick="switchSection('web-page')"><i class="fas fa-desktop"></i> Home Page</div>
-            <div class="nav-item" onclick="switchSection('web-portfolio')"><i class="fas fa-images"></i> Portafolio
-            </div>
+            <div class="nav-item" onclick="switchSection('web-portfolio')"><i class="fas fa-images"></i> Galería de
+                Imágenes</div>
             <div class="nav-item" onclick="switchSection('web-social')"><i class="fas fa-quote-left"></i> Clientes & FAQ
             </div>
         </div>
@@ -681,13 +681,12 @@
         <section id="sec-web-portfolio" class="content-sec hidden">
             <div class="card-editor">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-                    <h3><i class="fas fa-briefcase"></i> Galería de Proyectos</h3>
-                    <button class="btn-action secondary" onclick="openCrudModal('projects')">Añadir Proyecto <i
-                            class="fas fa-plus"></i></button>
+                    <h3><i class="fas fa-images"></i> Administrador de Galería</h3>
+                    <button class="btn-action" onclick="openCrudModal('projects')">
+                        <i class="fas fa-plus"></i> Agregar Nueva Imagen
+                    </button>
                 </div>
-                <div id="projects-manager-list"
-                    style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px;">
-                </div>
+                <div id="projects-manager-list" style="display: flex; flex-direction: column; gap: 10px;"></div>
             </div>
         </section>
 
@@ -976,18 +975,32 @@
             const target = document.getElementById(containerId);
             if (!target) return;
 
-            target.innerHTML = data && data.length ? data.map(item => `
+            target.innerHTML = data && data.length ? data.map(item => {
+                const imgSource = item.image_url || item.avatar_url;
+                return `
                 <div class="manager-item">
-                    <div class="item-info">
-                        <b>${item.title || item.name || item.question || item.username}</b>
-                        <span>${item.description || item.category || item.role || item.answer || item.email || ''}</span>
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        ${imgSource ? `<img src="${imgSource}" style="width: 55px; height: 55px; border-radius: 10px; object-fit: cover; border: 1px solid var(--glass-border); background: #000;">` : `
+                            <div style="width: 55px; height: 55px; border-radius: 10px; background: var(--glass); display: flex; align-items: center; justify-content: center; border: 1px solid var(--glass-border);">
+                                <i class="fas fa-image" style="opacity: 0.3;"></i>
+                            </div>
+                        `}
+                        <div class="item-info">
+                            <b>${item.title || item.name || item.question || item.username}</b>
+                            <span>${item.description || item.category || item.role || item.answer || item.email || 'Sin descripción'}</span>
+                        </div>
                     </div>
                     <div class="actions">
-                        <button class="btn-circle" onclick="openCrudModal('${table}', '${item.id}')"><i class="fas fa-pen"></i></button>
-                        <button class="btn-circle del" onclick="deleteItem('${table}', '${item.id}')"><i class="fas fa-trash"></i></button>
+                        <button class="btn-circle" onclick="openCrudModal('${table}', '${item.id}')" title="Modificar Imagen / Datos">
+                            <i class="fas fa-pen"></i>
+                        </button>
+                        <button class="btn-circle del" onclick="deleteItem('${table}', '${item.id}')" title="Quitar de la Galería">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
                 </div>
-            `).join('') : '<p style="padding: 20px; color: var(--text-muted);">No hay elementos registrados.</p>';
+                `;
+            }).join('') : '<p style="padding: 30px; text-align: center; color: var(--text-muted); width: 100%;">No hay elementos registrados en esta galería.</p>';
         }
 
         function openCrudModal(table, id = null) {
