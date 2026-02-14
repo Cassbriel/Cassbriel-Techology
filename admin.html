@@ -222,7 +222,7 @@
             </div>
             <div class="input-group">
                 <label>Access Key</label>
-                <input type="password" id="password" placeholder="••••••••">
+                <input type="password" id="password" placeholder="1234">
             </div>
             <button class="btn-glow" onclick="login()">Enter Dashboard</button>
         </div>
@@ -336,7 +336,7 @@
         const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
 
         async function login() {
-            if (document.getElementById('username').value === 'admin' && document.getElementById('password').value === 'cassbriel2026') {
+            if (document.getElementById('username').value === 'admin' && document.getElementById('password').value === '1234') {
                 document.getElementById('login-overlay').classList.add('hidden');
                 document.getElementById('sidebar').classList.remove('hidden');
                 document.getElementById('main').classList.remove('hidden');
