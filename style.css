@@ -752,57 +752,93 @@ section {
     position: relative;
 }
 
+/* --- Contact Section Refinement --- */
 .contact-wrapper {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 60px;
-    align-items: flex-start;
+    grid-template-columns: 0.8fr 1.2fr;
+    gap: 80px;
+    align-items: stretch;
+}
+
+.contact-info-side {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.contact-info-side h2 {
+    margin: 20px 0;
+    line-height: 1.2;
 }
 
 .contact-methods {
-    margin-top: 3.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-}
-
-.method-item {
-    display: flex;
-    align-items: center;
+    margin-top: 40px;
+    display: grid;
     gap: 20px;
 }
 
-.method-item i {
-    width: 50px;
-    height: 50px;
-    background: var(--glass-bg);
+.method-item {
+    background: var(--dark-card);
     border: 1px solid var(--glass-border);
+    padding: 25px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    transition: var(--transition);
+}
+
+.method-item:hover {
+    border-color: var(--primary-blue);
+    transform: translateX(10px);
+    background: rgba(0, 168, 255, 0.05);
+}
+
+.method-item i {
+    width: 60px;
+    height: 60px;
+    background: rgba(0, 168, 255, 0.1);
+    border: 1px solid rgba(0, 168, 255, 0.2);
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 12px;
     color: var(--primary-blue);
-    font-size: 1.2rem;
+    font-size: 1.4rem;
+    flex-shrink: 0;
 }
 
-.method-item h4 {
-    font-size: 0.8rem;
+.method-item div h4 {
+    font-size: 0.75rem;
     color: var(--text-muted);
-    font-family: inherit;
+    text-transform: uppercase;
     letter-spacing: 1px;
+    margin-bottom: 4px;
 }
 
-.method-item p {
-    font-weight: 600;
+.method-item div p {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: white;
 }
 
 .contact-glass-form {
     background: var(--dark-card);
     border: 1px solid var(--glass-border);
-    padding: 60px;
+    padding: 50px;
     border-radius: 30px;
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.contact-glass-form .cta-primary {
     width: 100%;
+    margin-top: 10px;
+    justify-content: center;
+    font-size: 1.1rem;
+    padding: 1.2rem;
 }
 
 /* --- Footer --- */
