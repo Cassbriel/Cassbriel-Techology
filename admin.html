@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium Dashboard | Cassbriel Technology</title>
+    <title>Cassbriel | Master Command Center</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Syncopate:wght@400;700&display=swap"
         rel="stylesheet">
@@ -14,17 +14,16 @@
         :root {
             --primary: #00a8ff;
             --primary-glow: rgba(0, 168, 255, 0.4);
-            --secondary: #0056b3;
-            --accent: #32ff7e;
-            --danger: #ff4757;
+            --accent-green: #32ff7e;
+            --accent-red: #ff4757;
             --bg-dark: #06090f;
             --bg-surface: #0d1117;
             --bg-card: #161b22;
             --glass: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.08);
             --text-main: #f0f6fc;
             --text-muted: #8b949e;
-            --transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             --radius-lg: 24px;
             --radius-md: 16px;
             --sidebar-width: 280px;
@@ -49,7 +48,7 @@
             display: none !important;
         }
 
-        /* --- Login Overlay --- */
+        /* --- Login OS --- */
         #login-overlay {
             position: fixed;
             inset: 0;
@@ -67,381 +66,760 @@
             border-radius: var(--radius-lg);
             border: 1px solid var(--glass-border);
             width: 100%;
-            max-width: 420px;
+            max-width: 440px;
             text-align: center;
             box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
         }
 
-        .logo-box {
-            font-family: 'Syncopate', sans-serif;
-            font-size: 1.8rem;
-            margin-bottom: 40px;
-        }
-
-        .logo-box span {
-            color: var(--primary);
-            text-shadow: 0 0 20px var(--primary-glow);
-        }
-
-        .input-group {
-            margin-bottom: 24px;
-            text-align: left;
-        }
-
-        .input-group label {
-            display: block;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-            text-transform: uppercase;
-        }
-
-        .input-group input,
-        .input-group textarea {
-            width: 100%;
-            padding: 14px;
-            background: var(--bg-surface);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--radius-md);
-            color: white;
-        }
-
-        .btn-glow {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border: none;
-            border-radius: var(--radius-md);
-            color: white;
-            font-weight: 800;
-            cursor: pointer;
-            text-transform: uppercase;
-        }
-
-        /* --- Layout --- */
+        /* --- Sidebar Navigation --- */
         aside {
             width: var(--sidebar-width);
             background: var(--bg-surface);
             border-right: 1px solid var(--glass-border);
             display: flex;
             flex-direction: column;
-            padding: 40px 24px;
+            padding: 40px 20px;
+            z-index: 1000;
+        }
+
+        .logo-area {
+            font-family: 'Syncopate', sans-serif;
+            font-size: 1.2rem;
+            margin-bottom: 50px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-area span {
+            color: var(--primary);
+            text-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        .nav-group {
+            margin-bottom: 30px;
+        }
+
+        .nav-label {
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            padding-left: 15px;
         }
 
         .nav-item {
             display: flex;
             align-items: center;
             gap: 15px;
-            padding: 16px;
+            padding: 14px 20px;
             border-radius: var(--radius-md);
             cursor: pointer;
             color: var(--text-muted);
-            margin-bottom: 8px;
+            margin-bottom: 5px;
+            transition: var(--transition);
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
         }
 
         .nav-item.active {
-            background: rgba(0, 168, 255, 0.1);
+            background: linear-gradient(90deg, rgba(0, 168, 255, 0.15), transparent);
             color: var(--primary);
-            border-left: 4px solid var(--primary);
+            border-left: 3px solid var(--primary);
         }
 
+        /* --- Main Content --- */
         main {
             flex: 1;
-            padding: 50px;
+            padding: 40px;
             overflow-y: auto;
             background: var(--bg-dark);
         }
 
-        .card {
-            background: var(--bg-card);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--radius-lg);
-            padding: 40px;
-            margin-bottom: 30px;
-        }
-
-        /* --- Manager Items --- */
-        .manager-item {
-            background: var(--bg-surface);
-            padding: 20px;
-            border-radius: var(--radius-md);
-            margin-bottom: 10px;
+        .top-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 40px;
         }
 
-        .btn-icon {
+        .tab-title h1 {
+            font-size: 2rem;
+            font-weight: 800;
+        }
+
+        /* --- Cards & Grid --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            padding: 30px;
+            border-radius: var(--radius-lg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card i {
+            position: absolute;
+            right: -20px;
+            bottom: -20px;
+            font-size: 8rem;
+            opacity: 0.05;
+            transform: rotate(-15deg);
+        }
+
+        .stat-card.green {
+            border-bottom: 4px solid var(--accent-green);
+        }
+
+        .stat-card.red {
+            border-bottom: 4px solid var(--accent-red);
+        }
+
+        .stat-card.blue {
+            border-bottom: 4px solid var(--primary);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card-editor {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: 35px;
+            margin-bottom: 30px;
+        }
+
+        .card-editor h3 {
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Syncopate', sans-serif;
+            font-size: 0.9rem;
+        }
+
+        /* --- Input Styles --- */
+        .field-group {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .field-group label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 14px 18px;
+            color: white;
+            transition: var(--transition);
+            font-family: inherit;
+            font-size: 0.95rem;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(0, 168, 255, 0.2);
+            background: rgba(0, 168, 255, 0.05);
+        }
+
+        .btn-action {
+            background: linear-gradient(135deg, var(--primary), #0056b3);
+            font-weight: 800;
+            color: white;
+            padding: 16px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 30px rgba(0, 168, 255, 0.3);
+            width: auto;
+            align-self: flex-start;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px rgba(0, 168, 255, 0.5);
+        }
+
+        .btn-action.secondary {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            box-shadow: none;
+        }
+
+        /* --- List Manager --- */
+        .manager-item {
+            background: var(--bg-surface);
+            padding: 18px 24px;
+            border-radius: var(--radius-md);
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid transparent;
+            transition: var(--transition);
+        }
+
+        .manager-item:hover {
+            border-color: var(--glass-border);
+            background: var(--bg-card);
+        }
+
+        .item-info b {
+            font-size: 1.1rem;
+        }
+
+        .item-info span {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: block;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid var(--glass-border);
             background: transparent;
             color: white;
-            border: 1px solid var(--glass-border);
-            padding: 8px;
-            border-radius: 8px;
             cursor: pointer;
+            transition: 0.2s;
         }
 
-        .btn-icon:hover {
+        .btn-circle:hover {
             color: var(--primary);
+            border-color: var(--primary);
         }
 
-        .btn-icon.delete:hover {
-            border-color: var(--danger);
-            color: var(--danger);
+        .btn-circle.del:hover {
+            color: var(--accent-red);
+            border-color: var(--accent-red);
         }
 
-        /* --- Modal --- */
+        /* --- Modals --- */
         #editor-modal {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
+            backdrop-filter: blur(10px);
         }
 
-        .modal-content {
+        .modal-body {
             background: var(--bg-card);
-            padding: 40px;
+            width: 100%;
+            max-width: 600px;
             border-radius: var(--radius-lg);
-            width: 600px;
+            padding: 50px;
+            border: 1px solid var(--glass-border);
             max-height: 90vh;
             overflow-y: auto;
+        }
+
+        /* --- Mobile Toggle --- */
+        .mobile-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 5000;
+            box-shadow: 0 0 30px var(--primary-glow);
+        }
+
+        @media (max-width: 1024px) {
+            aside {
+                transform: translateX(-100%);
+                position: absolute;
+                height: 100vh;
+            }
+
+            aside.active {
+                transform: translateX(0);
+            }
+
+            main {
+                padding: 20px;
+            }
+
+            .mobile-btn {
+                display: flex;
+            }
         }
     </style>
 </head>
 
 <body>
 
+    <!-- OS LOGIN -->
     <div id="login-overlay">
         <div class="login-box">
-            <div class="logo-box">CASSBRIEL <span>TECH</span></div>
-            <div class="input-group">
-                <label>Admin User</label>
+            <div class="logo-area" style="font-size: 1.8rem; justify-content: center;">CASSBRIEL <span>MASTER</span>
+            </div>
+            <p style="color: var(--text-muted); margin-bottom: 35px;">Control Neural de Empresa & Web</p>
+            <div class="field-group">
+                <label>Usuario Maestro</label>
                 <input type="text" id="username" placeholder="admin">
             </div>
-            <div class="input-group">
-                <label>Access Key</label>
+            <div class="field-group">
+                <label>Llave de Sistema</label>
                 <input type="password" id="password" placeholder="1234">
             </div>
-            <button class="btn-glow" onclick="login()">Enter Dashboard</button>
+            <button class="btn-action" style="width: 100%; justify-content: center; margin-top: 20px;"
+                onclick="masterLogin()">Acceder al Núcleo</button>
         </div>
     </div>
 
-    <aside class="hidden" id="sidebar">
-        <div class="logo-box" style="font-size: 1.2rem; margin-bottom: 40px;">CASSBRIEL <span>TECH</span></div>
-        <div class="nav-items">
-            <div class="nav-item active" onclick="showTab('global')"><i class="fas fa-globe"></i> Global</div>
-            <div class="nav-item" onclick="showTab('services')"><i class="fas fa-server"></i> Servicios</div>
-            <div class="nav-item" onclick="showTab('projects')"><i class="fas fa-project-diagram"></i> Proyectos</div>
-            <div class="nav-item" onclick="showTab('testimonials')"><i class="fas fa-comments"></i> Testimonios</div>
-            <div class="nav-item" onclick="showTab('faq')"><i class="fas fa-question-circle"></i> FAQ</div>
-            <div class="nav-item" onclick="showTab('appearance')"><i class="fas fa-paint-brush"></i> Diseño</div>
-            <div class="nav-item" onclick="logout()" style="margin-top: auto; color: var(--danger);"><i
-                    class="fas fa-sign-out-alt"></i> Salir</div>
+    <!-- MASTER SIDEBAR -->
+    <aside id="sidebar">
+        <div class="logo-area">CASSBRIEL <span>TECH</span></div>
+
+        <div class="nav-group">
+            <p class="nav-label">Finanzas ERP</p>
+            <div class="nav-item active" onclick="switchSection('dashboard')"><i class="fas fa-chart-line"></i>
+                Dashboard Hoy</div>
+            <div class="nav-item" onclick="switchSection('finance')"><i class="fas fa-wallet"></i> Ingresos / Salidas
+            </div>
+        </div>
+
+        <div class="nav-group">
+            <p class="nav-label">Infraestructura Web</p>
+            <div class="nav-item" onclick="switchSection('web-config')"><i class="fas fa-globe"></i> Config Global</div>
+            <div class="nav-item" onclick="switchSection('web-page')"><i class="fas fa-desktop"></i> Home Page</div>
+            <div class="nav-item" onclick="switchSection('web-portfolio')"><i class="fas fa-images"></i> Portafolio
+            </div>
+            <div class="nav-item" onclick="switchSection('web-social')"><i class="fas fa-quote-left"></i> Clientes & FAQ
+            </div>
+        </div>
+
+        <div class="logout-area" style="margin-top: auto;">
+            <div class="nav-item" onclick="location.reload()" style="color: var(--accent-red); margin-bottom: 0;"><i
+                    class="fas fa-power-off"></i> Cerrar Núcleo</div>
         </div>
     </aside>
 
-    <main class="hidden" id="main">
-        <div class="top-bar" style="margin-bottom: 40px;">
-            <h1 id="tab-title">Configuración Global</h1>
+    <main id="main-content" class="hidden">
+        <div class="top-header">
+            <div class="tab-title">
+                <h1 id="section-title">Finanzas: Vista General</h1>
+            </div>
+            <div class="user-pill"
+                style="background: var(--glass); padding: 8px 20px; border-radius: 50px; font-weight: 600; font-size: 0.8rem; border: 1px solid var(--glass-border);">
+                Master Admin</div>
         </div>
 
-        <!-- Global Tab -->
-        <section id="tab-global" class="tab-content">
-            <div class="card">
-                <h3>Hero Section</h3>
-                <div class="input-group" style="margin-top: 20px;"><label>Hero Title</label><input
-                        id="config-hero_title"></div>
-                <div class="input-group"><label>Hero Slogan</label><textarea id="config-hero_slogan"
+        <!-- SECTION: DASHBOARD FINANZAS -->
+        <section id="sec-dashboard" class="content-sec">
+            <div class="stats-grid">
+                <div class="stat-card green">
+                    <i class="fas fa-arrow-trend-up"></i>
+                    <h4>Total Ingresos Hoy</h4>
+                    <div class="amount" id="dash-income">S/ 0.00</div>
+                    <p style="font-size: 0.8rem; color: var(--accent-green); margin-top: 10px;">+ Registro en Tiempo
+                        Real</p>
+                </div>
+                <div class="stat-card red">
+                    <i class="fas fa-arrow-trend-down"></i>
+                    <h4>Total Salidas Hoy</h4>
+                    <div class="amount" id="dash-expense">S/ 0.00</div>
+                    <p style="font-size: 0.8rem; color: var(--accent-red); margin-top: 10px;">- Control de Gastos</p>
+                </div>
+                <div class="stat-card blue">
+                    <i class="fas fa-scale-balanced"></i>
+                    <h4>Balance Neto Diario</h4>
+                    <div class="amount" id="dash-balance">S/ 0.00</div>
+                    <p style="font-size: 0.8rem; color: var(--primary); margin-top: 10px;">= Liquidez Actual</p>
+                </div>
+            </div>
+
+            <div class="card-editor">
+                <h3><i class="fas fa-clock-rotate-left"></i> Últimas Transacciones</h3>
+                <div id="transactions-list"></div>
+            </div>
+        </section>
+
+        <!-- SECTION: FINANCE ENTRY -->
+        <section id="sec-finance" class="content-sec hidden">
+            <div class="form-row">
+                <div class="card-editor">
+                    <h3><i class="fas fa-plus-circle" style="color: var(--accent-green);"></i> Registrar Ingreso</h3>
+                    <div class="field-group"><label>Concepto de Entrada</label><input id="fin-inc-concept"
+                            placeholder="Ej: Venta Cámaras IP"></div>
+                    <div class="form-row">
+                        <div class="field-group"><label>Monto (S/)</label><input id="fin-inc-amount" type="number"
+                                step="0.01"></div>
+                        <div class="field-group"><label>Fecha</label><input id="fin-inc-date" type="date"></div>
+                    </div>
+                    <button class="btn-action" onclick="saveFinance('income')">Guardar Ingreso <i
+                            class="fas fa-check"></i></button>
+                </div>
+                <div class="card-editor">
+                    <h3><i class="fas fa-minus-circle" style="color: var(--accent-red);"></i> Registrar Salida</h3>
+                    <div class="field-group"><label>Concepto de Gasto</label><input id="fin-exp-concept"
+                            placeholder="Ej: Pago Proveedor"></div>
+                    <div class="form-row">
+                        <div class="field-group"><label>Monto (S/)</label><input id="fin-exp-amount" type="number"
+                                step="0.01"></div>
+                        <div class="field-group"><label>Fecha</label><input id="fin-exp-date" type="date"></div>
+                    </div>
+                    <button class="btn-action" style="background: linear-gradient(135deg, var(--accent-red), #991b1b);"
+                        onclick="saveFinance('expense')">Guardar Egreso <i class="fas fa-check"></i></button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: WEB CONFIG -->
+        <section id="sec-web-config" class="content-sec hidden">
+            <div class="card-editor">
+                <h3><i class="fas fa-id-card"></i> Identidad del Sitio</h3>
+                <div class="form-row">
+                    <div class="field-group"><label>Logo Principal (Texto)</label><input id="conf-logo_text_main"></div>
+                    <div class="field-group"><label>Acento Logo (Texto Azul)</label><input id="conf-logo_text_accent">
+                    </div>
+                </div>
+                <div class="field-group"><label>Email de Contacto Oficial</label><input id="conf-contact_email"></div>
+                <div class="field-group"><label>WhatsApp Oficial (Ej: 51900000000)</label><input id="conf-whatsapp">
+                </div>
+                <button class="btn-action" onclick="saveWebConfig()">Guardar Cambios Identidad</button>
+            </div>
+            <div class="card-editor">
+                <h3><i class="fas fa-certificate"></i> Marcas Asociadas</h3>
+                <div class="field-group"><label>Marcas Aliadas (Separadas por comas)</label><textarea id="conf-brands"
                         rows="3"></textarea></div>
-                <button class="btn-glow" onclick="saveGlobalConfig()">Save Config</button>
+                <button class="btn-action" onclick="saveWebConfig()">Actualizar Marcas</button>
             </div>
         </section>
 
-        <!-- Services Tab -->
-        <section id="tab-services" class="tab-content hidden">
-            <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h3>Manage Services</h3>
-                    <button class="btn-glow" style="width: auto; padding: 10px 20px;"
-                        onclick="openEditor('services')">New Service</button>
-                </div>
-                <div id="services-list"></div>
-            </div>
-        </section>
-
-        <!-- Projects Tab -->
-        <section id="tab-projects" class="tab-content hidden">
-            <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h3>Portfolio</h3>
-                    <button class="btn-glow" style="width: auto; padding: 10px 20px;"
-                        onclick="openEditor('projects')">New Project</button>
-                </div>
-                <div id="projects-list"></div>
-            </div>
-        </section>
-
-        <!-- Testimonials Tab -->
-        <section id="tab-testimonials" class="tab-content hidden">
-            <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h3>Testimonials</h3>
-                    <button class="btn-glow" style="width: auto; padding: 10px 20px;"
-                        onclick="openEditor('testimonials')">New Testimonial</button>
-                </div>
-                <div id="testimonials-list"></div>
-            </div>
-        </section>
-
-        <!-- FAQ Tab -->
-        <section id="tab-faq" class="tab-content hidden">
-            <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h3>Questions & Answers</h3>
-                    <button class="btn-glow" style="width: auto; padding: 10px 20px;" onclick="openEditor('faq')">New
-                        FAQ</button>
-                </div>
-                <div id="faq-list"></div>
-            </div>
-        </section>
-
-        <!-- Appearance Tab -->
-        <section id="tab-appearance" class="tab-content hidden">
-            <div class="card">
-                <h3>Visual Design</h3>
-                <div class="input-group" style="margin-top: 20px;"><label>Main Logo Text</label><input
-                        id="config-logo_text_main"></div>
-                <div class="input-group"><label>Accent Logo Text</label><input id="config-logo_text_accent"></div>
-                <div class="input-group"><label>Brands (comma separated)</label><textarea id="config-brands"
+        <!-- SECTION: HOME PAGE CONTENT -->
+        <section id="sec-web-page" class="content-sec hidden">
+            <div class="card-editor">
+                <h3><i class="fas fa-layer-group"></i> Hero Section (Portada)</h3>
+                <div class="field-group"><label>Título Impacto (Portada)</label><input id="conf-hero_title"></div>
+                <div class="field-group"><label>Eslogan / Descripción</label><textarea id="conf-hero_slogan"
                         rows="3"></textarea></div>
-                <button class="btn-glow" onclick="saveGlobalConfig()">Sync Design</button>
+                <div class="field-group"><label>URL Imagen de Fondo (Hero)</label><input id="conf-hero_bg_url"
+                        placeholder="https://..."></div>
+                <button class="btn-action" onclick="saveWebConfig()">Sync Portada Directo</button>
+            </div>
+
+            <div class="card-editor">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h3><i class="fas fa-screwdriver-wrench"></i> Gestión de Servicios</h3>
+                    <button class="btn-action secondary" onclick="openCrudModal('services')">Nuevo Servicio <i
+                            class="fas fa-plus"></i></button>
+                </div>
+                <div id="services-manager-list"></div>
+            </div>
+        </section>
+
+        <!-- SECTION: PORTFOLIO -->
+        <section id="sec-web-portfolio" class="content-sec hidden">
+            <div class="card-editor">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h3><i class="fas fa-briefcase"></i> Galería de Proyectos</h3>
+                    <button class="btn-action secondary" onclick="openCrudModal('projects')">Añadir Proyecto <i
+                            class="fas fa-plus"></i></button>
+                </div>
+                <div id="projects-manager-list"
+                    style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px;">
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: SOCIAL & FAQ -->
+        <section id="sec-web-social" class="content-sec hidden">
+            <div class="card-editor">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h3><i class="fas fa-comment-dots"></i> Testimonios de Clientes</h3>
+                    <button class="btn-action secondary" onclick="openCrudModal('testimonials')">Nuevo Testimonio <i
+                            class="fas fa-plus"></i></button>
+                </div>
+                <div id="testimonials-manager-list"></div>
+            </div>
+            <div class="card-editor">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h3><i class="fas fa-clipboard-question"></i> Centro de Ayuda (FAQ)</h3>
+                    <button class="btn-action secondary" onclick="openCrudModal('faq')">Nueva Pregunta <i
+                            class="fas fa-plus"></i></button>
+                </div>
+                <div id="faq-manager-list"></div>
             </div>
         </section>
     </main>
 
+    <!-- MOBILE COMMAND BUTTON -->
+    <div class="mobile-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
+
+    <!-- UNIVERSAL CRUD MODAL -->
     <div id="editor-modal" class="hidden">
-        <div class="modal-content">
-            <h3 id="modal-title">Edit Item</h3>
-            <div id="editor-form" style="margin: 20px 0;"></div>
-            <button class="btn-glow" onclick="saveItem()">Save Changes</button>
-            <button class="btn-glow" style="background:#333; margin-top: 10px;" onclick="closeEditor()">Cancel</button>
+        <div class="modal-body">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px;">
+                <h2 id="modal-title-main" style="font-family: 'Syncopate', sans-serif; font-size: 1rem;">NUEVO ELEMENTO
+                </h2>
+                <button class="btn-circle del" onclick="closeModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="modal-form"></div>
+            <div style="margin-top: 30px; display: flex; gap: 15px;">
+                <button class="btn-action" id="modal-save-btn">Guardar <i class="fas fa-save"></i></button>
+                <button class="btn-action secondary" onclick="closeModal()">Cancelar</button>
+            </div>
         </div>
     </div>
 
     <script>
+        // --- 1. CORE CONFIG ---
         const SB_URL = "https://pemcxmrykznozaogsjjj.supabase.co";
         const SB_KEY = "sb_publishable_pI2OLxXdwvLo4fsJRBTBbg_Y1SkeYjr";
         const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
+        let activeTab = 'dashboard';
 
-        async function login() {
-            if (document.getElementById('username').value === 'admin' && document.getElementById('password').value === '1234') {
+        // --- 2. AUTH ---
+        function masterLogin() {
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            if (u === 'admin' && p === '1234') {
                 document.getElementById('login-overlay').classList.add('hidden');
-                document.getElementById('sidebar').classList.remove('hidden');
-                document.getElementById('main').classList.remove('hidden');
-                loadAll();
-            } else alert("Invalid Login");
+                document.getElementById('main-content').classList.remove('hidden');
+                initSystem();
+            } else alert("Error de Acceso: Llave no autorizada.");
         }
 
-        function logout() { window.location.reload(); }
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
 
-        function showTab(id) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+        async function initSystem() {
+            loadERP();
+            loadWebConfig();
+            loadLists();
+            // Default select date
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('fin-inc-date').value = today;
+            document.getElementById('fin-exp-date').value = today;
+        }
+
+        function switchSection(id) {
+            activeTab = id;
+            document.querySelectorAll('.content-sec').forEach(s => s.classList.add('hidden'));
             document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            document.getElementById('tab-' + id).classList.remove('hidden');
+            document.getElementById('sec-' + id).classList.remove('hidden');
             event.currentTarget.classList.add('active');
-            document.getElementById('tab-title').innerText = id.charAt(0).toUpperCase() + id.slice(1);
+
+            const titles = {
+                'dashboard': 'Dashboard de Finanzas',
+                'finance': 'Registro de Operaciones',
+                'web-config': 'Identidad & Contacto',
+                'web-page': 'Contenido Home Page',
+                'web-portfolio': 'Gallería de Proyectos',
+                'web-social': 'Testimonios & Social'
+            };
+            document.getElementById('section-title').innerText = titles[id];
+            if (window.innerWidth < 1024) toggleSidebar();
         }
 
-        async function loadAll() {
-            const { data: configs } = await supabaseClient.from('site_config').select('*');
-            configs.forEach(c => {
-                const el = document.getElementById('config-' + c.key);
-                if (el) el.value = c.value;
-            });
-            refreshList('services');
-            refreshList('projects');
-            refreshList('testimonials');
-            refreshList('faq');
-        }
+        // --- 3. ERP LOGIC ---
+        async function loadERP() {
+            const today = new Date().toISOString().split('T')[0];
+            const { data: trans } = await supabaseClient.from('erp_transactions').select('*').eq('date', today);
 
-        async function refreshList(table) {
-            const { data } = await supabaseClient.from(table).select('*').order('order_index');
-            const list = document.getElementById(table + "-list");
-            list.innerHTML = data.map(item => `
+            let inc = 0, exp = 0;
+            if (trans) {
+                trans.forEach(t => {
+                    if (t.type === 'income') inc += parseFloat(t.amount);
+                    else exp += parseFloat(t.amount);
+                });
+            }
+
+            document.getElementById('dash-income').innerText = `S/ ${inc.toFixed(2)}`;
+            document.getElementById('dash-expense').innerText = `S/ ${exp.toFixed(2)}`;
+            document.getElementById('dash-balance').innerText = `S/ ${(inc - exp).toFixed(2)}`;
+
+            // Load small hist
+            const list = document.getElementById('transactions-list');
+            list.innerHTML = trans && trans.length ? trans.map(t => `
                 <div class="manager-item">
-                    <div><b>${item.title || item.name || item.question}</b></div>
-                    <div>
-                        <button class="btn-icon" onclick="openEditor('${table}', '${item.id}')"><i class="fas fa-edit"></i></button>
-                        <button class="btn-icon delete" onclick="deleteItem('${table}', '${item.id}')"><i class="fas fa-trash"></i></button>
+                    <div class="item-info">
+                        <b>${t.concept}</b>
+                        <span>${t.type === 'income' ? 'Ingreso' : 'Salida'} - ${t.date}</span>
+                    </div>
+                    <div style="font-weight: 800; color: ${t.type === 'income' ? 'var(--accent-green)' : 'var(--accent-red)'}">
+                        ${t.type === 'income' ? '+' : '-'} S/ ${parseFloat(t.amount).toFixed(2)}
+                    </div>
+                </div>
+            `).join('') : '<p style="text-align: center; color: var(--text-muted);">Sin movimientos registrados hoy.</p>';
+        }
+
+        async function saveFinance(type) {
+            const concept = document.getElementById(`fin-${type === 'income' ? 'inc' : 'exp'}-concept`).value;
+            const amount = document.getElementById(`fin-${type === 'income' ? 'inc' : 'exp'}-amount`).value;
+            const date = document.getElementById(`fin-${type === 'income' ? 'inc' : 'exp'}-date`).value;
+
+            if (!concept || !amount) return alert("Completa los datos");
+
+            await supabaseClient.from('erp_transactions').insert([{ concept, amount: parseFloat(amount), date, type }]);
+            alert("Operación Registrada!");
+            document.getElementById(`fin-${type === 'income' ? 'inc' : 'exp'}-concept`).value = "";
+            document.getElementById(`fin-${type === 'income' ? 'inc' : 'exp'}-amount`).value = "";
+            loadERP();
+        }
+
+        // --- 4. WEBSITE LOGIC ---
+        async function loadWebConfig() {
+            const { data: configs } = await supabaseClient.from('site_config').select('*');
+            if (configs) {
+                configs.forEach(c => {
+                    const el = document.getElementById('conf-' + c.key);
+                    if (el) el.value = c.value;
+                });
+            }
+        }
+
+        async function saveWebConfig() {
+            const inputs = document.querySelectorAll('[id^="conf-"]');
+            for (const input of inputs) {
+                const key = input.id.replace('conf-', '');
+                await supabaseClient.from('site_config').update({ value: input.value }).eq('key', key);
+            }
+            alert("Configuración de Sitio Actualizada!");
+        }
+
+        // --- 5. UNIVERSAL CRUD ---
+        let currentTable = "", currentId = null;
+
+        function loadLists() {
+            refreshList('services', 'services-manager-list');
+            refreshList('projects', 'projects-manager-list');
+            refreshList('testimonials', 'testimonials-manager-list');
+            refreshList('faq', 'faq-manager-list');
+        }
+
+        async function refreshList(table, containerId) {
+            const { data } = await supabaseClient.from(table).select('*').order('order_index');
+            const target = document.getElementById(containerId);
+            if (!target) return;
+
+            target.innerHTML = data.map(item => `
+                <div class="manager-item">
+                    <div class="item-info">
+                        <b>${item.title || item.name || item.question}</b>
+                        <span>${item.description || item.category || item.role || item.answer}</span>
+                    </div>
+                    <div class="actions">
+                        <button class="btn-circle" onclick="openCrudModal('${table}', '${item.id}')"><i class="fas fa-pen"></i></button>
+                        <button class="btn-circle del" onclick="deleteItem('${table}', '${item.id}')"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
             `).join('');
         }
 
-        async function saveGlobalConfig() {
-            const inputs = document.querySelectorAll('[id^="config-"]');
-            for (const input of inputs) {
-                const key = input.id.replace('config-', '');
-                await supabaseClient.from('site_config').update({ value: input.value }).eq('key', key);
-            }
-            alert("Updated successfully!");
-        }
-
-        let currentTable = "";
-        let currentId = null;
-
-        function openEditor(table, id = null) {
+        function openCrudModal(table, id = null) {
             currentTable = table;
             currentId = id;
-            const form = document.getElementById('editor-form');
-            form.innerHTML = '';
+            document.getElementById('modal-title-main').innerText = id ? 'EDITAR ELEMENTO' : 'NUEVO ELEMENTO';
+            const form = document.getElementById('modal-form');
+            form.innerHTML = "";
 
-            if (table === 'services') {
-                form.innerHTML = `Icon: <input id="edit-icon"> Title: <input id="edit-title"> Desc: <textarea id="edit-description"></textarea>`;
-            } else if (table === 'projects') {
-                form.innerHTML = `Title: <input id="edit-title"> Cat: <input id="edit-category"> Img: <input id="edit-image_url"> Link: <input id="edit-link">`;
-            } else if (table === 'testimonials') {
-                form.innerHTML = `Name: <input id="edit-name"> Role: <input id="edit-role"> Content: <textarea id="edit-content"></textarea>`;
-            } else if (table === 'faq') {
-                form.innerHTML = `Question: <input id="edit-question"> Answer: <textarea id="edit-answer"></textarea>`;
-            }
-            form.innerHTML += `<br>Order Index: <input type="number" id="edit-order_index">`;
+            const fields = {
+                'services': ['icon', 'title', 'description'],
+                'projects': ['title', 'category', 'image_url', 'link'],
+                'testimonials': ['name', 'role', 'company', 'content', 'avatar_url'],
+                'faq': ['question', 'answer']
+            };
 
-            if (id) fillEditor(table, id);
+            fields[table].forEach(f => {
+                form.innerHTML += `<div class="field-group"><label>${f.replace('_', ' ')}</label>${f === 'description' || f === 'content' || f === 'answer' ? `<textarea id="val-${f}" rows="3"></textarea>` : `<input id="val-${f}">`}</div>`;
+            });
+            form.innerHTML += `<div class="field-group"><label>Orden de visualización</label><input type="number" id="val-order_index"></div>`;
+
+            if (id) fillModal(table, id);
             document.getElementById('editor-modal').classList.remove('hidden');
+            document.getElementById('modal-save-btn').onclick = () => saveItem();
         }
 
-        async function fillEditor(table, id) {
+        async function fillModal(table, id) {
             const { data } = await supabaseClient.from(table).select('*').eq('id', id).single();
-            Object.keys(data).forEach(key => {
-                const el = document.getElementById('edit-' + key);
-                if (el) el.value = data[key];
+            Object.keys(data).forEach(k => {
+                const el = document.getElementById('val-' + k);
+                if (el) el.value = data[k];
             });
         }
 
         async function saveItem() {
             const payload = {};
-            document.querySelectorAll('[id^="edit-"]').forEach(i => {
-                payload[i.id.replace('edit-', '')] = i.value;
+            document.querySelectorAll('[id^="val-"]').forEach(i => {
+                payload[i.id.replace('val-', '')] = i.value;
             });
 
             if (currentId) await supabaseClient.from(currentTable).update(payload).eq('id', currentId);
-            else await supabaseClient.from(currentTable).insert(payload);
+            else await supabaseClient.from(currentTable).insert([payload]);
 
-            closeEditor();
-            refreshList(currentTable);
+            alert("Operación completada con éxito");
+            closeModal();
+            loadLists();
         }
-
-        function closeEditor() { document.getElementById('editor-modal').classList.add('hidden'); }
 
         async function deleteItem(table, id) {
-            if (confirm("Are you sure?")) {
+            if (confirm("¿Estás seguro de eliminar este registro?")) {
                 await supabaseClient.from(table).delete().eq('id', id);
-                refreshList(table);
+                loadLists();
             }
         }
+
+        function closeModal() { document.getElementById('editor-modal').classList.add('hidden'); }
     </script>
 </body>
 
