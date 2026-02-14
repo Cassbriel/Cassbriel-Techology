@@ -759,8 +759,16 @@
 
         // --- 3. ERP LOGIC ---
         async function loadERP() {
-            const today = new Date().toISOString().split('T')[0];
-            const { data: trans } = await supabaseClient.from('erp_transactions').select('*').eq('date', today);
+            // Usar fecha local para el Dashboard, ya que el calendario local es el que importa al usuario
+            const now = new Date();
+            const today = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+
+            const { data: trans, error } = await supabaseClient.from('erp_transactions').select('*').eq('date', today);
+
+            if (error) {
+                console.error("Error al cargar ERP:", error);
+                return;
+            }
 
             let inc = 0, exp = 0;
             if (trans) {
@@ -785,21 +793,36 @@
                         ${t.type === 'income' ? '+' : '-'} S/ ${parseFloat(t.amount).toFixed(2)}
                     </div>
                 </div>
-            `).join('') : '<p style="text-align: center; color: var(--text-muted);">Sin movimientos registrados hoy.</p>';
+            `).join('') : '<p style="text-align: center; color: var(--text-muted); padding: 10px;">Sin movimientos registrados hoy.</p>';
         }
 
         async function saveFinance(type) {
-            const concept = document.getElementById(`fin-${type === 'income' ? 'inc' : 'exp'}-concept`).value;
-            const amount = document.getElementById(`fin-${type === 'income' ? 'inc' : 'exp'}-amount`).value;
-            const date = document.getElementById(`fin-${type === 'income' ? 'inc' : 'exp'}-date`).value;
+            const conceptEl = document.getElementById(`fin-${type === 'income' ? 'inc' : 'exp'}-concept`);
+            const amountEl = document.getElementById(`fin-${type === 'income' ? 'inc' : 'exp'}-amount`);
+            const dateEl = document.getElementById(`fin-${type === 'income' ? 'inc' : 'exp'}-date`);
 
-            if (!concept || !amount) return alert("Completa los datos");
+            const concept = conceptEl.value;
+            const amount = amountEl.value;
+            const date = dateEl.value;
 
-            await supabaseClient.from('erp_transactions').insert([{ concept, amount: parseFloat(amount), date, type }]);
-            alert("Operación Registrada!");
-            document.getElementById(`fin-${type === 'income' ? 'inc' : 'exp'}-concept`).value = "";
-            document.getElementById(`fin-${type === 'income' ? 'inc' : 'exp'}-amount`).value = "";
-            loadERP();
+            if (!concept || !amount || !date) return alert("Por favor, completa todos los campos (Concepto, Monto y Fecha)");
+
+            const { error } = await supabaseClient.from('erp_transactions').insert([{
+                concept,
+                amount: parseFloat(amount),
+                date: date,
+                type: type
+            }]);
+
+            if (error) {
+                console.error("Error al guardar:", error);
+                alert("Error al guardar en la base de datos: " + error.message);
+            } else {
+                alert("¡Operación Registrada con éxito!");
+                conceptEl.value = "";
+                amountEl.value = "";
+                loadERP();
+            }
         }
 
         // --- 4. WEBSITE LOGIC ---
