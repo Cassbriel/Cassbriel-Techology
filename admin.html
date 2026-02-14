@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Dashboard | Cassbriel Technology</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Syncopate:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #00a8ff;
+            --primary-glow: rgba(0, 168, 255, 0.4);
+            --secondary: #0056b3;
+            --accent: #32ff7e;
+            --danger: #ff4757;
+            --bg-dark: #06090f;
+            --bg-surface: #0d1117;
+            --bg-card: #161b22;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #f0f6fc;
+            --text-muted: #8b949e;
+            --transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --sidebar-width: 280px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* --- Login Overlay --- */
+        #login-overlay {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at center, #1a1b26 0%, #06090f 100%);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(20px);
+        }
+
+        .login-box {
+            background: var(--bg-card);
+            padding: 50px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--glass-border);
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
+        }
+
+        .logo-box {
+            font-family: 'Syncopate', sans-serif;
+            font-size: 1.8rem;
+            margin-bottom: 40px;
+        }
+
+        .logo-box span {
+            color: var(--primary);
+            text-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        .input-group {
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .input-group input,
+        .input-group textarea {
+            width: 100%;
+            padding: 14px;
+            background: var(--bg-surface);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            color: white;
+        }
+
+        .btn-glow {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: var(--radius-md);
+            color: white;
+            font-weight: 800;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        /* --- Layout --- */
+        aside {
+            width: var(--sidebar-width);
+            background: var(--bg-surface);
+            border-right: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            padding: 40px 24px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 16px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .nav-item.active {
+            background: rgba(0, 168, 255, 0.1);
+            color: var(--primary);
+            border-left: 4px solid var(--primary);
+        }
+
+        main {
+            flex: 1;
+            padding: 50px;
+            overflow-y: auto;
+            background: var(--bg-dark);
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            margin-bottom: 30px;
+        }
+
+        /* --- Manager Items --- */
+        .manager-item {
+            background: var(--bg-surface);
+            padding: 20px;
+            border-radius: var(--radius-md);
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-icon {
+            background: transparent;
+            color: white;
+            border: 1px solid var(--glass-border);
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .btn-icon:hover {
+            color: var(--primary);
+        }
+
+        .btn-icon.delete:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        /* --- Modal --- */
+        #editor-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            padding: 40px;
+            border-radius: var(--radius-lg);
+            width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="login-overlay">
+        <div class="login-box">
+            <div class="logo-box">CASSBRIEL <span>TECH</span></div>
+            <div class="input-group">
+                <label>Admin User</label>
+                <input type="text" id="username" placeholder="admin">
+            </div>
+            <div class="input-group">
+                <label>Access Key</label>
+                <input type="password" id="password" placeholder="••••••••">
+            </div>
+            <button class="btn-glow" onclick="login()">Enter Dashboard</button>
+        </div>
+    </div>
+
+    <aside class="hidden" id="sidebar">
+        <div class="logo-box" style="font-size: 1.2rem; margin-bottom: 40px;">CASSBRIEL <span>TECH</span></div>
+        <div class="nav-items">
+            <div class="nav-item active" onclick="showTab('global')"><i class="fas fa-globe"></i> Global</div>
+            <div class="nav-item" onclick="showTab('services')"><i class="fas fa-server"></i> Servicios</div>
+            <div class="nav-item" onclick="showTab('projects')"><i class="fas fa-project-diagram"></i> Proyectos</div>
+            <div class="nav-item" onclick="showTab('testimonials')"><i class="fas fa-comments"></i> Testimonios</div>
+            <div class="nav-item" onclick="showTab('faq')"><i class="fas fa-question-circle"></i> FAQ</div>
+            <div class="nav-item" onclick="showTab('appearance')"><i class="fas fa-paint-brush"></i> Diseño</div>
+            <div class="nav-item" onclick="logout()" style="margin-top: auto; color: var(--danger);"><i
+                    class="fas fa-sign-out-alt"></i> Salir</div>
+        </div>
+    </aside>
+
+    <main class="hidden" id="main">
+        <div class="top-bar" style="margin-bottom: 40px;">
+            <h1 id="tab-title">Configuración Global</h1>
+        </div>
+
+        <!-- Global Tab -->
+        <section id="tab-global" class="tab-content">
+            <div class="card">
+                <h3>Hero Section</h3>
+                <div class="input-group" style="margin-top: 20px;"><label>Hero Title</label><input
+                        id="config-hero_title"></div>
+                <div class="input-group"><label>Hero Slogan</label><textarea id="config-hero_slogan"
+                        rows="3"></textarea></div>
+                <button class="btn-glow" onclick="saveGlobalConfig()">Save Config</button>
+            </div>
+        </section>
+
+        <!-- Services Tab -->
+        <section id="tab-services" class="tab-content hidden">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3>Manage Services</h3>
+                    <button class="btn-glow" style="width: auto; padding: 10px 20px;"
+                        onclick="openEditor('services')">New Service</button>
+                </div>
+                <div id="services-list"></div>
+            </div>
+        </section>
+
+        <!-- Projects Tab -->
+        <section id="tab-projects" class="tab-content hidden">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3>Portfolio</h3>
+                    <button class="btn-glow" style="width: auto; padding: 10px 20px;"
+                        onclick="openEditor('projects')">New Project</button>
+                </div>
+                <div id="projects-list"></div>
+            </div>
+        </section>
+
+        <!-- Testimonials Tab -->
+        <section id="tab-testimonials" class="tab-content hidden">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3>Testimonials</h3>
+                    <button class="btn-glow" style="width: auto; padding: 10px 20px;"
+                        onclick="openEditor('testimonials')">New Testimonial</button>
+                </div>
+                <div id="testimonials-list"></div>
+            </div>
+        </section>
+
+        <!-- FAQ Tab -->
+        <section id="tab-faq" class="tab-content hidden">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3>Questions & Answers</h3>
+                    <button class="btn-glow" style="width: auto; padding: 10px 20px;" onclick="openEditor('faq')">New
+                        FAQ</button>
+                </div>
+                <div id="faq-list"></div>
+            </div>
+        </section>
+
+        <!-- Appearance Tab -->
+        <section id="tab-appearance" class="tab-content hidden">
+            <div class="card">
+                <h3>Visual Design</h3>
+                <div class="input-group" style="margin-top: 20px;"><label>Main Logo Text</label><input
+                        id="config-logo_text_main"></div>
+                <div class="input-group"><label>Accent Logo Text</label><input id="config-logo_text_accent"></div>
+                <div class="input-group"><label>Brands (comma separated)</label><textarea id="config-brands"
+                        rows="3"></textarea></div>
+                <button class="btn-glow" onclick="saveGlobalConfig()">Sync Design</button>
+            </div>
+        </section>
+    </main>
+
+    <div id="editor-modal" class="hidden">
+        <div class="modal-content">
+            <h3 id="modal-title">Edit Item</h3>
+            <div id="editor-form" style="margin: 20px 0;"></div>
+            <button class="btn-glow" onclick="saveItem()">Save Changes</button>
+            <button class="btn-glow" style="background:#333; margin-top: 10px;" onclick="closeEditor()">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        const SB_URL = "https://pemcxmrykznozaogsjjj.supabase.co";
+        const SB_KEY = "sb_publishable_pI2OLxXdwvLo4fsJRBTBbg_Y1SkeYjr";
+        const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
+
+        async function login() {
+            if (document.getElementById('username').value === 'admin' && document.getElementById('password').value === 'cassbriel2026') {
+                document.getElementById('login-overlay').classList.add('hidden');
+                document.getElementById('sidebar').classList.remove('hidden');
+                document.getElementById('main').classList.remove('hidden');
+                loadAll();
+            } else alert("Invalid Login");
+        }
+
+        function logout() { window.location.reload(); }
+
+        function showTab(id) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            document.getElementById('tab-' + id).classList.remove('hidden');
+            event.currentTarget.classList.add('active');
+            document.getElementById('tab-title').innerText = id.charAt(0).toUpperCase() + id.slice(1);
+        }
+
+        async function loadAll() {
+            const { data: configs } = await supabaseClient.from('site_config').select('*');
+            configs.forEach(c => {
+                const el = document.getElementById('config-' + c.key);
+                if (el) el.value = c.value;
+            });
+            refreshList('services');
+            refreshList('projects');
+            refreshList('testimonials');
+            refreshList('faq');
+        }
+
+        async function refreshList(table) {
+            const { data } = await supabaseClient.from(table).select('*').order('order_index');
+            const list = document.getElementById(table + "-list");
+            list.innerHTML = data.map(item => `
+                <div class="manager-item">
+                    <div><b>${item.title || item.name || item.question}</b></div>
+                    <div>
+                        <button class="btn-icon" onclick="openEditor('${table}', '${item.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn-icon delete" onclick="deleteItem('${table}', '${item.id}')"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function saveGlobalConfig() {
+            const inputs = document.querySelectorAll('[id^="config-"]');
+            for (const input of inputs) {
+                const key = input.id.replace('config-', '');
+                await supabaseClient.from('site_config').update({ value: input.value }).eq('key', key);
+            }
+            alert("Updated successfully!");
+        }
+
+        let currentTable = "";
+        let currentId = null;
+
+        function openEditor(table, id = null) {
+            currentTable = table;
+            currentId = id;
+            const form = document.getElementById('editor-form');
+            form.innerHTML = '';
+
+            if (table === 'services') {
+                form.innerHTML = `Icon: <input id="edit-icon"> Title: <input id="edit-title"> Desc: <textarea id="edit-description"></textarea>`;
+            } else if (table === 'projects') {
+                form.innerHTML = `Title: <input id="edit-title"> Cat: <input id="edit-category"> Img: <input id="edit-image_url"> Link: <input id="edit-link">`;
+            } else if (table === 'testimonials') {
+                form.innerHTML = `Name: <input id="edit-name"> Role: <input id="edit-role"> Content: <textarea id="edit-content"></textarea>`;
+            } else if (table === 'faq') {
+                form.innerHTML = `Question: <input id="edit-question"> Answer: <textarea id="edit-answer"></textarea>`;
+            }
+            form.innerHTML += `<br>Order Index: <input type="number" id="edit-order_index">`;
+
+            if (id) fillEditor(table, id);
+            document.getElementById('editor-modal').classList.remove('hidden');
+        }
+
+        async function fillEditor(table, id) {
+            const { data } = await supabaseClient.from(table).select('*').eq('id', id).single();
+            Object.keys(data).forEach(key => {
+                const el = document.getElementById('edit-' + key);
+                if (el) el.value = data[key];
+            });
+        }
+
+        async function saveItem() {
+            const payload = {};
+            document.querySelectorAll('[id^="edit-"]').forEach(i => {
+                payload[i.id.replace('edit-', '')] = i.value;
+            });
+
+            if (currentId) await supabaseClient.from(currentTable).update(payload).eq('id', currentId);
+            else await supabaseClient.from(currentTable).insert(payload);
+
+            closeEditor();
+            refreshList(currentTable);
+        }
+
+        function closeEditor() { document.getElementById('editor-modal').classList.add('hidden'); }
+
+        async function deleteItem(table, id) {
+            if (confirm("Are you sure?")) {
+                await supabaseClient.from(table).delete().eq('id', id);
+                refreshList(table);
+            }
+        }
+    </script>
+</body>
+
+</html>

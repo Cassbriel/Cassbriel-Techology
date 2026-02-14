@@ -39,6 +39,10 @@
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -59,74 +63,9 @@
                 <li><a href="#servicios">Servicios</a></li>
                 <li><a href="#proyectos">Proyectos</a></li>
                 <li><a href="#contacto">Contacto</a></li>
-                <!-- Move login to specific mobile link -->
-                <li class="mobile-only"><a href="#" id="mobileAdminTrigger">Acceso Admin</a></li>
             </ul>
-            <button class="admin-trigger desktop-only" id="openAdmin">
-                <i class="fa-solid fa-user-shield"></i> Ingresa
-            </button>
         </div>
     </nav>
-
-    <!-- Login Modal -->
-    <div class="login-overlay" id="loginOverlay">
-        <div class="login-card">
-            <div class="login-header">
-                <i class="fa-solid fa-shield-halved"></i>
-                <h2>Control Maestro</h2>
-                <p>Ingrese sus credenciales de administrador</p>
-            </div>
-            <form id="loginForm">
-                <div class="input-group">
-                    <label>Usuario</label>
-                    <input type="text" id="username" placeholder="Usuario" required>
-                </div>
-                <div class="input-group">
-                    <label>Contraseña</label>
-                    <input type="password" id="password" placeholder="••••••••" required>
-                </div>
-                <button type="submit" class="cta-primary" style="width: 100%; margin-top: 1rem;">Acceder</button>
-            </form>
-            <p id="loginError"
-                style="color: #ff4d4d; font-size: 0.8rem; margin-top: 1rem; text-align: center; display: none;">
-                Credenciales incorrectas</p>
-            <button class="close-login" id="closeLogin">Cancelar</button>
-        </div>
-    </div>
-
-    <!-- Hero Section -->
-    <section id="inicio" class="hero">
-        <div class="hero-bg-grid"></div>
-        <div class="hero-glow-1"></div>
-        <div class="hero-glow-2"></div>
-        <div class="container hero-content">
-            <div class="hero-badge-wrapper">
-                <span class="badge-tech">SEGURIDAD & INNOVACIÓN DIGITAL</span>
-            </div>
-            <h1 class="hero-title">PROTEGIENDO EL <span class="gradient-text">FUTURO</span><br>OPTIMIZANDO EL <span
-                    class="outline-text">PRESENTE</span>.</h1>
-            <p>Especialistas en seguridad electrónica, infraestructura de red y soluciones de hardware a medida.
-                Innovamos para que tu tranquilidad no tenga límites.</p>
-            <div class="btn-group">
-                <button class="cta-primary" id="openQuote">
-                    <span class="btn-content">Presupuesto Gratis <i class="fa-solid fa-bolt"></i></span>
-                </button>
-                <a href="#servicios" class="cta-secondary">
-                    <span class="btn-content">Nuestros Servicios</span>
-                </a>
-            </div>
-        </div>
-        <div class="scroll-indicator">
-            <div class="mouse">
-                <div class="wheel"></div>
-            </div>
-            <div class="arrow-scroll">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </div>
-    </section>
 
     <!-- Modal: Cotización Gratis -->
     <div class="login-overlay" id="quoteModal">
@@ -171,13 +110,52 @@
                     <textarea name="mensaje" rows="3"
                         placeholder="Cuéntanos un poco más sobre tu necesidad..."></textarea>
                 </div>
-                <div style="display: flex; gap:10px; margin-top: 1rem;">
-                    <button type="submit" class="cta-primary" style="flex:1">Enviar Solicitud</button>
-                    <button type="button" class="cta-secondary" id="closeQuoteModal">Cancelar</button>
+                <div class="modal-footer-btns">
+                    <button type="submit" class="cta-primary">
+                        <span class="btn-content">Enviar Solicitud <i class="fa-solid fa-paper-plane"></i></span>
+                    </button>
+                    <button type="button" class="cta-secondary" id="closeQuoteModal">
+                        <span class="btn-content">Cancelar</span>
+                    </button>
                 </div>
             </form>
         </div>
     </div>
+
+    <!-- Hero Section -->
+    <section id="inicio" class="hero">
+        <div class="hero-main-bg" id="hero-dynamic-bg"></div>
+        <div class="hero-bg-grid"></div>
+        <div class="hero-glow-1"></div>
+        <div class="hero-glow-2"></div>
+        <div class="container hero-content">
+            <div class="hero-badge-wrapper">
+                <span class="badge-tech">SEGURIDAD & INNOVACIÓN DIGITAL</span>
+            </div>
+            <h1 class="hero-title">PROTEGIENDO EL <span class="gradient-text">FUTURO</span><br>OPTIMIZANDO EL <span
+                    class="outline-text">PRESENTE</span>.</h1>
+            <p>Especialistas en seguridad electrónica, infraestructura de red y soluciones de hardware a medida.
+                Innovamos para que tu tranquilidad no tenga límites.</p>
+            <div class="btn-group">
+                <button class="cta-primary" id="openQuote">
+                    <span class="btn-content">Presupuesto Gratis <i class="fa-solid fa-bolt"></i></span>
+                </button>
+                <a href="#servicios" class="cta-secondary">
+                    <span class="btn-content">Nuestros Servicios</span>
+                </a>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <div class="mouse">
+                <div class="wheel"></div>
+            </div>
+            <div class="arrow-scroll">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </section>
 
     <!-- Services Section -->
     <section id="servicios" class="services">
@@ -187,33 +165,55 @@
                 <h2>Soluciones 360°</h2>
             </div>
             <div class="services-grid">
-                <!-- Service 1 -->
                 <div class="service-card">
                     <div class="card-icon"><i class="fa-solid fa-video"></i></div>
                     <h3>Cámaras de Seguridad</h3>
                     <p>Venta e instalación de sistemas CCTV de alta definición. Monitoreo remoto y detección
                         inteligente.</p>
                 </div>
-                <!-- Service 2 -->
                 <div class="service-card">
                     <div class="card-icon"><i class="fa-solid fa-laptop-medical"></i></div>
                     <h3>Soporte Técnico Especializado</h3>
                     <p>Mantenimiento preventivo y correctivo de Laptops, Computadoras e Impresoras. Recuperación de
                         datos.</p>
                 </div>
-                <!-- Service 3 -->
                 <div class="service-card">
                     <div class="card-icon"><i class="fa-solid fa-tower-broadcast"></i></div>
                     <h3>Radio Enlaces</h3>
                     <p>Instalación de conectividad de largo alcance. Internet donde otros no llegan con tecnología
                         estable.</p>
                 </div>
-                <!-- Service 4 -->
                 <div class="service-card">
                     <div class="card-icon"><i class="fa-solid fa-network-wired"></i></div>
                     <h3>Redes & Infraestructura</h3>
                     <p>Diseño y montaje de cableado estructurado, redes WiFi corporativas y soluciones de conectividad.
                     </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Brands Section -->
+    <section class="brands-section">
+        <div class="container">
+            <div class="brands-wrapper">
+                <div class="brand-item">
+                    <p>HIKVISION</p>
+                </div>
+                <div class="brand-item">
+                    <p>DAHUA</p>
+                </div>
+                <div class="brand-item">
+                    <p>TP-LINK</p>
+                </div>
+                <div class="brand-item">
+                    <p>UBIQUITI</p>
+                </div>
+                <div class="brand-item">
+                    <p>WESTERN DIGITAL</p>
+                </div>
+                <div class="brand-item">
+                    <p>SEAGATE</p>
                 </div>
             </div>
         </div>
@@ -227,7 +227,6 @@
                 <h2>Proyectos Destacados</h2>
             </div>
             <div class="projects-grid">
-                <!-- Project 1 -->
                 <div class="project-card">
                     <img src="https://images.unsplash.com/photo-1557597774-9d2739f85a94?q=80&w=2000&auto=format&fit=crop"
                         alt="Instalación CCTV">
@@ -242,7 +241,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- Project 2 -->
                 <div class="project-card">
                     <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc51?q=80&w=2000&auto=format&fit=crop"
                         alt="Redes de Datos">
@@ -257,7 +255,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- Project 3 -->
                 <div class="project-card">
                     <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2000&auto=format&fit=crop"
                         alt="Soporte Técnico">
@@ -272,7 +269,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- Project 4 -->
                 <div class="project-card">
                     <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2000&auto=format&fit=crop"
                         alt="Radio Enlaces">
@@ -286,6 +282,65 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Methodology Section -->
+    <section class="methodology">
+        <div class="container">
+            <div class="section-head" style="text-align: center;">
+                <span class="badge-tech">CÓMO TRABAJAMOS</span>
+                <h2>Nuestro Proceso Altamente Eficiente</h2>
+            </div>
+            <div class="method-steps">
+                <div class="method-item">
+                    <div class="method-num">01</div>
+                    <h4>Consultoría Inicial</h4>
+                    <p>Analizamos tus necesidades específicas y el entorno para proponer la mejor solución.</p>
+                </div>
+                <div class="method-item">
+                    <div class="method-num">02</div>
+                    <h4>Diseño & Planificación</h4>
+                    <p>Creamos un plan detallado de infraestructura o soporte técnico optimizado para tu presupuesto.
+                    </p>
+                </div>
+                <div class="method-item">
+                    <div class="method-num">03</div>
+                    <h4>Ejecución & Instalación</h4>
+                    <p>Nuestro equipo experto realiza el montaje o soporte con estándares de calidad internacional.</p>
+                </div>
+                <div class="method-item">
+                    <div class="method-num">04</div>
+                    <h4>Soporte Continuo</h4>
+                    <p>Brindamos seguimiento y mantenimiento para asegurar que tu tecnología nunca se detenga.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonios" class="testimonials">
+        <div class="container">
+            <div class="section-head">
+                <span class="badge-tech">OPINIONES</span>
+                <h2>Clientes Satisfechos</h2>
+            </div>
+            <div class="testimonials-grid" id="testimonials-container">
+                <!-- Dynamic Content -->
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="faq-section">
+        <div class="container">
+            <div class="section-head" style="text-align: center;">
+                <span class="badge-tech">DUDAS</span>
+                <h2>Preguntas Frecuentes</h2>
+            </div>
+            <div class="faq-wrapper" id="faq-container">
+                <!-- Dynamic Content -->
             </div>
         </div>
     </section>
@@ -392,347 +447,19 @@
             </div>
             <div class="footer-bottom">
                 <p>&copy; 2026 Cassbriel Technology. Todos los derechos reservados.</p>
+                <button class="admin-trigger" onclick="window.location.href='admin.html'">
+                    <i class="fa-solid fa-lock"></i> Admin
+                </button>
             </div>
         </div>
     </footer>
 
-    <!-- Panel Maestro Overlay -->
+    <!-- Floating UI -->
+    <a href="https://wa.me/51900000000" class="whatsapp-float" target="_blank">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
 
-    <div class="panel-maestro" id="adminPanel">
-        <button class="close-panel" id="closeAdmin"><i class="fa-solid fa-xmark"></i></button>
-
-        <aside class="panel-sidebar">
-            <div class="sidebar-logo">CONTROL MAESTRO</div>
-            <ul class="sidebar-menu">
-                <li data-tab="resumen"><i class="fa-solid fa-chart-line"></i> <span>Resumen</span></li>
-                <li data-tab="diseno"><i class="fa-solid fa-pen-nib"></i> <span>Diseño Web</span></li>
-                <li data-tab="admin-proyectos"><i class="fa-solid fa-images"></i> <span>Administrar Proyectos</span>
-                </li>
-                <li data-tab="productos"><i class="fa-solid fa-box-open"></i> <span>Productos</span></li>
-                <li data-tab="categorias"><i class="fa-solid fa-tags"></i> <span>Categorías</span></li>
-                <li data-tab="usuarios"><i class="fa-solid fa-users-gear"></i> <span>Usuarios & Permisos</span></li>
-                <li data-tab="contabilidad"><i class="fa-solid fa-money-bill-trend-up"></i> <span>Contabilidad</span>
-                </li>
-                <li data-tab="config" class="active"><i class="fa-solid fa-gear"></i> <span>Configuración</span></li>
-            </ul>
-        </aside>
-
-        <main class="panel-content">
-            <!-- TAB: RESUMEN (Existing but improved) -->
-            <div id="tab-resumen" class="admin-tab">
-                <h2 class="tab-title">Estado General</h2>
-                <div class="stat-grid">
-                    <div class="stat-box">
-                        <div class="stat-label">Ingresos</div>
-                        <div class="stat-value" id="stat-ingresos">S/ 0.00</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-label">Usuarios Activos</div>
-                        <div class="stat-value" id="stat-usuarios">1</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB: DISEÑO WEB (EDITABLE CONTENT) -->
-            <div id="tab-diseno" class="admin-tab">
-                <h2 class="tab-title">Editor de Contenido Web</h2>
-                <div class="admin-card">
-                    <h3>Sección Hero (Inicio)</h3>
-                    <div class="form-grid">
-                        <div class="input-group">
-                            <label>Título Principal</label>
-                            <input type="text" id="edit-hero-title" placeholder="Protegiendo el Futuro...">
-                        </div>
-                        <div class="input-group">
-                            <label>Descripción</label>
-                            <textarea id="edit-hero-desc" rows="3"></textarea>
-                        </div>
-                        <div class="input-group">
-                            <label>Número de WhatsApp</label>
-                            <input type="text" id="edit-whatsapp" placeholder="51900000000">
-                        </div>
-                    </div>
-                    <button class="cta-primary" id="save-web-content">Guardar Cambios Visuales</button>
-                </div>
-            </div>
-
-            <!-- TAB: ADMINISTRAR PROYECTOS -->
-            <div id="tab-admin-proyectos" class="admin-tab">
-                <div class="tab-header-flex">
-                    <h2 class="tab-title">Gestión de Proyectos</h2>
-                    <button class="admin-trigger" id="btn-add-project-modal"><i class="fa-solid fa-plus"></i> Nuevo
-                        Proyecto</button>
-                </div>
-                <div class="admin-table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Imagen</th>
-                                <th>Proyecto</th>
-                                <th>Categoría</th>
-                                <th>Descripción</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="projects-list-admin">
-                            <!-- Injected by JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- TAB: USUARIOS & PERMISOS -->
-            <div id="tab-usuarios" class="admin-tab">
-                <div class="tab-header-flex">
-                    <h2 class="tab-title">Gestión de Personal</h2>
-                    <button class="admin-trigger" id="btn-add-user"><i class="fa-solid fa-plus"></i> Nuevo
-                        Usuario</button>
-                </div>
-                <div class="admin-table-container">
-                    <table id="users-table">
-                        <thead>
-                            <tr>
-                                <th>Usuario</th>
-                                <th>Rol</th>
-                                <th>Permisos</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="users-list">
-                            <!-- Injected by JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- TAB: PRODUCTOS -->
-            <div id="tab-productos" class="admin-tab">
-                <div class="tab-header-flex">
-                    <h2 class="tab-title">Gestión de Catálogo</h2>
-                    <button class="admin-trigger" id="btn-add-product"><i class="fa-solid fa-plus"></i> Nuevo
-                        Producto</button>
-                </div>
-                <div class="admin-table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Imagen</th>
-                                <th>Producto</th>
-                                <th>Categoría</th>
-                                <th>Precio (S/)</th>
-                                <th>Stock</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="product-list-admin">
-                            <!-- Injected by JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- TAB: CATEGORÍAS -->
-            <div id="tab-categorias" class="admin-tab">
-                <div class="tab-header-flex">
-                    <h2 class="tab-title">Gestión de Categorías</h2>
-                    <div style="display: flex; gap: 10px;">
-                        <input type="text" id="new-cat-name" placeholder="Nueva categoría..." class="styled-input"
-                            style="margin:0; width: 200px;">
-                        <button class="admin-trigger" id="btn-add-category"><i class="fa-solid fa-plus"></i>
-                            Agregar</button>
-                    </div>
-                </div>
-                <div class="admin-table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Nombre</th>
-                                <th>Productos</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="category-list-admin">
-                            <!-- Injected by JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- TAB: CONTABILIDAD -->
-            <div id="tab-contabilidad" class="admin-tab">
-                <h2 class="tab-title">Caja y Contabilidad</h2>
-                <div class="stat-grid">
-                    <div class="stat-box" style="border-left: 4px solid var(--accent-green);">
-                        <div class="stat-label">Ingresos Totales</div>
-                        <div class="stat-value" id="total-income">S/ 0.00</div>
-                    </div>
-                    <div class="stat-box" style="border-left: 4px solid #ff4d4d;">
-                        <div class="stat-label">Salidas (Gastos)</div>
-                        <div class="stat-value" id="total-expense">S/ 0.00</div>
-                    </div>
-                </div>
-                <div class="admin-card">
-                    <h3>Registrar Movimiento</h3>
-                    <form id="accounting-form" class="form-grid">
-                        <div class="input-group">
-                            <label>Concepto</label>
-                            <input type="text" id="acc-concept" placeholder="Ej: Venta de Cámara IP" required>
-                        </div>
-                        <div class="input-group">
-                            <label>Monto</label>
-                            <input type="number" id="acc-amount" step="0.01" required>
-                        </div>
-                        <div class="input-group">
-                            <label>Tipo</label>
-                            <select id="acc-type" class="styled-select">
-                                <option value="ingreso">Ingreso (+)</option>
-                                <option value="salida">Salida (-)</option>
-                            </select>
-                        </div>
-                        <div class="input-group" style="display: flex; align-items: flex-end;">
-                            <button type="submit" class="cta-primary" style="width: 100%;">Registrar</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- TAB: COTIZACIONES -->
-            <div id="tab-cotizaciones" class="admin-tab">
-                <h2 class="tab-title">Cotizaciones Pendientes</h2>
-                <div class="admin-table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Cliente</th>
-                                <th>Servicio</th>
-                                <th>WhatsApp</th>
-                                <th>Fecha</th>
-                                <th>Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody id="quotes-list-admin">
-                            <tr>
-                                <td>Juan Perez</td>
-                                <td>Instalación CCTV</td>
-                                <td>987654321</td>
-                                <td>01/02/2026</td>
-                                <td><span class="badge-role admin">Pendiente</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- TAB: CONFIGURACION -->
-            <div id="tab-config" class="admin-tab active">
-                <h2 class="tab-title">Configuración del Sistema</h2>
-                <div class="admin-card">
-                    <p>Bienvenido al Sistema de Control Maestro. Seleccione una pestaña a la izquierda para comenzar a
-                        editar.</p>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- Modal: Nuevo Usuario -->
-    <div class="login-overlay" id="userModal">
-        <div class="login-card" style="max-width: 500px;">
-            <h3>Configurar Nuevo Usuario</h3>
-            <form id="newUserForm">
-                <div class="input-group">
-                    <label>Nombre de Usuario</label>
-                    <input type="text" id="new-username" required>
-                </div>
-                <div class="input-group">
-                    <label>Contraseña</label>
-                    <input type="password" id="new-password" required>
-                </div>
-                <div class="input-group">
-                    <label>Rol del Usuario</label>
-                    <select id="new-role" class="styled-select">
-                        <option value="staff">Personal (Solo Lectura/Edición Limitada)</option>
-                        <option value="admin">Administrador (Control Total)</option>
-                    </select>
-                </div>
-                <div class="permissions-list">
-                    <label><input type="checkbox" name="perm" value="edit_web"> Editar Web</label>
-                    <label><input type="checkbox" name="perm" value="view_money"> Ver Contabilidad</label>
-                    <label><input type="checkbox" name="perm" value="manage_users"> Gestionar Usuarios</label>
-                </div>
-                <div style="display: flex; gap:10px; margin-top: 2rem;">
-                    <button type="submit" class="cta-primary" style="flex:1">Crear Acceso</button>
-                    <button type="button" class="cta-secondary" id="closeUserModal">Cancelar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal: Nuevo Producto -->
-    <div class="login-overlay" id="productModal">
-        <div class="login-card">
-            <h3>Registrar Nuevo Producto</h3>
-            <form id="newProductForm">
-                <div class="input-group">
-                    <label>Nombre del Producto</label>
-                    <input type="text" id="p-name" required>
-                </div>
-                <div class="input-group">
-                    <label>Categoría</label>
-                    <select id="p-category" class="styled-select">
-                        <!-- Injected by JS -->
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label>Precio (S/)</label>
-                    <input type="number" id="p-price" step="0.01" required>
-                </div>
-                <div class="input-group">
-                    <label>Stock Inicial</label>
-                    <input type="number" id="p-stock" required>
-                </div>
-                <div style="display: flex; gap:10px; margin-top: 2rem;">
-                    <button type="submit" class="cta-primary" style="flex:1">Guardar</button>
-                    <button type="button" class="cta-secondary" id="closeProductModal">Cancelar</button>
-                </div>
-            </form>
-        </div>
-        <!-- Modal: Nuevo Proyecto -->
-        <div class="login-overlay" id="projectModal">
-            <div class="login-card" style="max-width: 500px;">
-                <h3>Registrar Nuevo Proyecto</h3>
-                <form id="newProjectForm">
-                    <div class="input-group">
-                        <label>Título del Proyecto</label>
-                        <input type="text" id="proj-title" placeholder="Ej: Instalación de Cámaras" required>
-                    </div>
-                    <div class="input-group">
-                        <label>Categoría</label>
-                        <input type="text" id="proj-category" placeholder="Ej: Seguridad CCTV" required>
-                    </div>
-                    <div class="input-group">
-                        <label>URL de la Imagen (Muestra)</label>
-                        <input type="url" id="proj-img" placeholder="https://ejemplo.com/imagen.jpg" required>
-                    </div>
-                    <div class="input-group">
-                        <label>Descripción Corta</label>
-                        <textarea id="proj-desc" rows="3" placeholder="Resumen del trabajo realizado..."
-                            required></textarea>
-                    </div>
-                    <div style="display: flex; gap:10px; margin-top: 2rem;">
-                        <button type="submit" class="cta-primary" style="flex:1">Guardar Proyecto</button>
-                        <button type="button" class="cta-secondary" id="closeProjectModal">Cancelar</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Floating UI -->
-        <a href="https://wa.me/51900000000" class="whatsapp-float" target="_blank">
-            <i class="fa-brands fa-whatsapp"></i>
-        </a>
-
-        <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 
 </html>
