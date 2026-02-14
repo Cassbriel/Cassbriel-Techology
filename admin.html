@@ -600,6 +600,14 @@
                     <div class="form-row">
                         <div class="field-group"><label>Monto (S/)</label><input id="fin-inc-amount" type="number"
                                 step="0.01"></div>
+                        <div class="field-group"><label>Medio de Pago</label>
+                            <select id="fin-inc-method"
+                                style="background: var(--dark-void); color: white; border: 1px solid var(--glass-border); padding: 10px; border-radius: 8px; width: 100%;">
+                                <option value="Efectivo">Efectivo</option>
+                                <option value="Transferencia">Transferencia</option>
+                                <option value="Yape/Plin">Yape / Plin</option>
+                            </select>
+                        </div>
                         <div class="field-group"><label>Fecha</label><input id="fin-inc-date" type="date"></div>
                     </div>
                     <button class="btn-action" onclick="saveFinance('income')">Guardar Ingreso <i
@@ -612,6 +620,14 @@
                     <div class="form-row">
                         <div class="field-group"><label>Monto (S/)</label><input id="fin-exp-amount" type="number"
                                 step="0.01"></div>
+                        <div class="field-group"><label>Medio de Pago</label>
+                            <select id="fin-exp-method"
+                                style="background: var(--dark-void); color: white; border: 1px solid var(--glass-border); padding: 10px; border-radius: 8px; width: 100%;">
+                                <option value="Efectivo">Efectivo</option>
+                                <option value="Transferencia">Transferencia</option>
+                                <option value="Yape/Plin">Yape / Plin</option>
+                            </select>
+                        </div>
                         <div class="field-group"><label>Fecha</label><input id="fin-exp-date" type="date"></div>
                     </div>
                     <button class="btn-action" style="background: linear-gradient(135deg, var(--accent-red), #991b1b);"
@@ -933,8 +949,9 @@
                     <div class="item-info">
                         <b>${t.concept}</b>
                         <span>${t.type === 'income' ? 'Ingreso' : 'Salida'} - ${t.date}</span>
-                        <div style="font-size: 0.7rem; color: var(--primary-blue); margin-top: 5px;">
-                            <i class="fas fa-user-pen" style="font-size: 0.65rem;"></i> Registrado por: ${t.recorded_by || 'Sistema'}
+                        <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 5px; display: flex; gap: 15px;">
+                            <span><i class="fas fa-credit-card" style="font-size: 0.65rem;"></i> ${t.payment_method || 'Efectivo'}</span>
+                            <span><i class="fas fa-user-pen" style="font-size: 0.65rem;"></i> ${t.recorded_by || 'Sistema'}</span>
                         </div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 20px;">
@@ -966,9 +983,12 @@
             const amountEl = document.getElementById(`fin-${type === 'income' ? 'inc' : 'exp'}-amount`);
             const dateEl = document.getElementById(`fin-${type === 'income' ? 'inc' : 'exp'}-date`);
 
+            const methodEl = document.getElementById(`fin-${type === 'income' ? 'inc' : 'exp'}-method`);
+
             const concept = conceptEl.value;
             const amount = amountEl.value;
             const date = dateEl.value;
+            const method = methodEl.value;
 
             if (!concept || !amount || !date) return showToast("Completa todos los campos obligatorios", "error");
 
@@ -977,7 +997,8 @@
                 amount: parseFloat(amount),
                 date: date,
                 type: type,
-                recorded_by: activeUserName
+                recorded_by: activeUserName,
+                payment_method: method
             }]);
 
             if (error) {
