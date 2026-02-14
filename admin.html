@@ -767,6 +767,7 @@
         const SB_KEY = "sb_publishable_pI2OLxXdwvLo4fsJRBTBbg_Y1SkeYjr";
         const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
         let activeTab = 'dashboard';
+        let activeUserName = "Sistema";
 
         // --- 2. NOTIFICATIONS ---
         function showToast(msg, type = 'success') {
@@ -791,8 +792,9 @@
 
             if (!u || !p) return showToast("Ingresa usuario y contraseña", "error");
 
-            // Hardcoded Fallback
-            if (u === 'admin' && p === '1234') {
+            // Updated Fallback Credentials
+            if (u === 'Cassbriel' && p === 'Cassiel@210123') {
+                activeUserName = "Cassbriel";
                 proceedToDashboard("Master Admin");
                 return;
             }
@@ -809,6 +811,7 @@
                 .single();
 
             if (user) {
+                activeUserName = user.username;
                 proceedToDashboard(user.role === 'admin' ? 'Admin ERP' : 'Editor Web');
             } else {
                 showToast("Error de Acceso: Credenciales incorrectas.", "error");
@@ -930,6 +933,9 @@
                     <div class="item-info">
                         <b>${t.concept}</b>
                         <span>${t.type === 'income' ? 'Ingreso' : 'Salida'} - ${t.date}</span>
+                        <div style="font-size: 0.7rem; color: var(--primary-blue); margin-top: 5px;">
+                            <i class="fas fa-user-pen" style="font-size: 0.65rem;"></i> Registrado por: ${t.recorded_by || 'Sistema'}
+                        </div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 20px;">
                         <div style="font-weight: 800; color: ${t.type === 'income' ? 'var(--accent-green)' : 'var(--accent-red)'}">
@@ -970,7 +976,8 @@
                 concept,
                 amount: parseFloat(amount),
                 date: date,
-                type: type
+                type: type,
+                recorded_by: activeUserName
             }]);
 
             if (error) {
