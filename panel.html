@@ -245,8 +245,8 @@
             <p id="login-error" style="color:var(--accent-red); margin-bottom:15px; font-size:0.9rem;" class="hidden">
             </p>
             <div class="form">
-                <input id="login-email" type="email" placeholder="Email (admin@cassbriel.com)">
-                <input id="login-pass" type="password" placeholder="Contraseña (admin123)">
+                <input id="login-user" type="text" placeholder="Usuario (admin)">
+                <input id="login-pass" type="password" placeholder="Contraseña (1234)">
                 <button onclick="handleLogin()">Iniciar Sesión</button>
             </div>
         </div>
@@ -324,14 +324,12 @@
 
         // 2. LÓGICA DE LOGIN
         async function handleLogin() {
-            const email = document.getElementById('login-email').value;
+            const user = document.getElementById('login-user').value;
             const pass = document.getElementById('login-pass').value;
             const errorEl = document.getElementById('login-error');
 
-            // Simulación de login con tabla 'erp_users' o similar en Supabase
-            // Para fines prácticos en este entorno local/demo, usaremos una validación rápida
-            if (email === "admin@cassbriel.com" && pass === "admin123") {
-                currentUser = { name: "Super Admin", email: email };
+            if (user === "admin" && pass === "1234") {
+                currentUser = { name: "Super Admin", user: user };
                 showPanel();
             } else {
                 errorEl.innerText = "Credenciales incorrectas";
