@@ -17,7 +17,7 @@
             --accent-green: #32ff7e;
             --accent-red: #ff4757;
             --bg-dark: #06090f;
-            --bg-surface: #0d1117;
+            --bg-surface: #10141b;
             --bg-card: #161b22;
             --glass: rgba(255, 255, 255, 0.03);
             --glass-border: rgba(255, 255, 255, 0.08);
@@ -80,6 +80,7 @@
             flex-direction: column;
             padding: 40px 20px;
             z-index: 1000;
+            transition: var(--transition);
         }
 
         .logo-area {
@@ -367,6 +368,43 @@
             overflow-y: auto;
         }
 
+        /* --- Custom File Upload --- */
+        .upload-area {
+            border: 2px dashed var(--glass-border);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            background: rgba(255, 255, 255, 0.02);
+            margin-bottom: 15px;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: rgba(0, 168, 255, 0.05);
+        }
+
+        .upload-area i {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .upload-area p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .preview-img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-top: 15px;
+            border: 1px solid var(--glass-border);
+        }
+
         /* --- Mobile Toggle --- */
         .mobile-btn {
             position: fixed;
@@ -448,6 +486,12 @@
             </div>
         </div>
 
+        <div class="nav-group">
+            <p class="nav-label">Administración</p>
+            <div class="nav-item" onclick="switchSection('users')"><i class="fas fa-user-shield"></i> Usuarios &
+                Permisos</div>
+        </div>
+
         <div class="logout-area" style="margin-top: auto;">
             <div class="nav-item" onclick="location.reload()" style="color: var(--accent-red); margin-bottom: 0;"><i
                     class="fas fa-power-off"></i> Cerrar Núcleo</div>
@@ -464,7 +508,7 @@
                 Master Admin</div>
         </div>
 
-        <!-- SECTION: DASHBOARD FINANZAS -->
+        <!-- SECCIÓN: DASHBOARD FINANZAS -->
         <section id="sec-dashboard" class="content-sec">
             <div class="stats-grid">
                 <div class="stat-card green">
@@ -494,7 +538,7 @@
             </div>
         </section>
 
-        <!-- SECTION: FINANCE ENTRY -->
+        <!-- SECCIÓN: FINANCE ENTRY -->
         <section id="sec-finance" class="content-sec hidden">
             <div class="form-row">
                 <div class="card-editor">
@@ -524,7 +568,7 @@
             </div>
         </section>
 
-        <!-- SECTION: WEB CONFIG -->
+        <!-- SECCIÓN: WEB CONFIG -->
         <section id="sec-web-config" class="content-sec hidden">
             <div class="card-editor">
                 <h3><i class="fas fa-id-card"></i> Identidad del Sitio</h3>
@@ -546,15 +590,26 @@
             </div>
         </section>
 
-        <!-- SECTION: HOME PAGE CONTENT -->
+        <!-- SECCIÓN: HOME PAGE CONTENT -->
         <section id="sec-web-page" class="content-sec hidden">
             <div class="card-editor">
                 <h3><i class="fas fa-layer-group"></i> Hero Section (Portada)</h3>
                 <div class="field-group"><label>Título Impacto (Portada)</label><input id="conf-hero_title"></div>
                 <div class="field-group"><label>Eslogan / Descripción</label><textarea id="conf-hero_slogan"
                         rows="3"></textarea></div>
-                <div class="field-group"><label>URL Imagen de Fondo (Hero)</label><input id="conf-hero_bg_url"
-                        placeholder="https://..."></div>
+
+                <div class="field-group">
+                    <label>Imagen de Portada</label>
+                    <div class="upload-area" onclick="triggerFileUpload('hero-img')">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Haz clic para subir imagen desde tu dispositivo</p>
+                        <input type="file" id="hero-img-input" class="hidden" accept="image/*"
+                            onchange="previewSelectedImage(this, 'hero-preview')">
+                    </div>
+                    <img id="hero-preview" class="preview-img hidden">
+                    <input type="hidden" id="conf-hero_bg_url">
+                </div>
+
                 <button class="btn-action" onclick="saveWebConfig()">Sync Portada Directo</button>
             </div>
 
@@ -568,7 +623,7 @@
             </div>
         </section>
 
-        <!-- SECTION: PORTFOLIO -->
+        <!-- SECCIÓN: PORTFOLIO -->
         <section id="sec-web-portfolio" class="content-sec hidden">
             <div class="card-editor">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
@@ -582,7 +637,7 @@
             </div>
         </section>
 
-        <!-- SECTION: SOCIAL & FAQ -->
+        <!-- SECCIÓN: SOCIAL & FAQ -->
         <section id="sec-web-social" class="content-sec hidden">
             <div class="card-editor">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
@@ -599,6 +654,37 @@
                             class="fas fa-plus"></i></button>
                 </div>
                 <div id="faq-manager-list"></div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN: USUARIOS & PERMISOS -->
+        <section id="sec-users" class="content-sec hidden">
+            <div class="card-editor">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h3><i class="fas fa-user-lock"></i> Usuarios del Sistema</h3>
+                    <button class="btn-action secondary" onclick="openCrudModal('erp_users')">Crear Usuario <i
+                            class="fas fa-user-plus"></i></button>
+                </div>
+                <div id="users-manager-list"></div>
+            </div>
+
+            <div class="card-editor">
+                <h3><i class="fas fa-shield-alt"></i> Niveles de Acceso</h3>
+                <div class="manager-item">
+                    <div class="item-info"><b>Master Admin</b><span>Acceso total al núcleo, finanzas y configuración
+                            web.</span></div>
+                    <div style="color: var(--primary);">Nivel 100</div>
+                </div>
+                <div class="manager-item">
+                    <div class="item-info"><b>Administrador ERP</b><span>Control de ingresos, salidas y balance. Lectura
+                            de web.</span></div>
+                    <div style="color: var(--accent-green);">Nivel 50</div>
+                </div>
+                <div class="manager-item">
+                    <div class="item-info"><b>Editor Web</b><span>Modificación de textos, imágenes y portafolio
+                            solamente.</span></div>
+                    <div style="color: var(--primary);">Nivel 30</div>
+                </div>
             </div>
         </section>
     </main>
@@ -646,7 +732,6 @@
             loadERP();
             loadWebConfig();
             loadLists();
-            // Default select date
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('fin-inc-date').value = today;
             document.getElementById('fin-exp-date').value = today;
@@ -665,7 +750,8 @@
                 'web-config': 'Identidad & Contacto',
                 'web-page': 'Contenido Home Page',
                 'web-portfolio': 'Gallería de Proyectos',
-                'web-social': 'Testimonios & Social'
+                'web-social': 'Testimonios & Social',
+                'users': 'Usuarios & Permisos'
             };
             document.getElementById('section-title').innerText = titles[id];
             if (window.innerWidth < 1024) toggleSidebar();
@@ -688,7 +774,6 @@
             document.getElementById('dash-expense').innerText = `S/ ${exp.toFixed(2)}`;
             document.getElementById('dash-balance').innerText = `S/ ${(inc - exp).toFixed(2)}`;
 
-            // Load small hist
             const list = document.getElementById('transactions-list');
             list.innerHTML = trans && trans.length ? trans.map(t => `
                 <div class="manager-item">
@@ -724,6 +809,11 @@
                 configs.forEach(c => {
                     const el = document.getElementById('conf-' + c.key);
                     if (el) el.value = c.value;
+                    if (c.key === 'hero_bg_url' && c.value) {
+                        const prev = document.getElementById('hero-preview');
+                        prev.src = c.value;
+                        prev.classList.remove('hidden');
+                    }
                 });
             }
         }
@@ -737,7 +827,30 @@
             alert("Configuración de Sitio Actualizada!");
         }
 
-        // --- 5. UNIVERSAL CRUD ---
+        // --- 5. IMAGE UPLOAD LOGIC ---
+        function triggerFileUpload(idPrefix) {
+            document.getElementById(idPrefix + '-input').click();
+        }
+
+        async function previewSelectedImage(input, previewId) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const preview = document.getElementById(previewId);
+                    preview.src = e.target.result;
+                    preview.classList.remove('hidden');
+
+                    // En un entorno productivo subiríamos a Supabase Storage
+                    // Aquí simulamos guardando el Base64 para visualización instantánea
+                    const hiddenInput = input.id.includes('hero') ? 'conf-hero_bg_url' : 'val-image_url';
+                    document.getElementById(hiddenInput).value = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // --- 6. UNIVERSAL CRUD ---
         let currentTable = "", currentId = null;
 
         function loadLists() {
@@ -745,6 +858,7 @@
             refreshList('projects', 'projects-manager-list');
             refreshList('testimonials', 'testimonials-manager-list');
             refreshList('faq', 'faq-manager-list');
+            refreshList('erp_users', 'users-manager-list');
         }
 
         async function refreshList(table, containerId) {
@@ -752,18 +866,18 @@
             const target = document.getElementById(containerId);
             if (!target) return;
 
-            target.innerHTML = data.map(item => `
+            target.innerHTML = data && data.length ? data.map(item => `
                 <div class="manager-item">
                     <div class="item-info">
-                        <b>${item.title || item.name || item.question}</b>
-                        <span>${item.description || item.category || item.role || item.answer}</span>
+                        <b>${item.title || item.name || item.question || item.username}</b>
+                        <span>${item.description || item.category || item.role || item.answer || item.email || ''}</span>
                     </div>
                     <div class="actions">
                         <button class="btn-circle" onclick="openCrudModal('${table}', '${item.id}')"><i class="fas fa-pen"></i></button>
                         <button class="btn-circle del" onclick="deleteItem('${table}', '${item.id}')"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
-            `).join('');
+            `).join('') : '<p style="padding: 20px; color: var(--text-muted);">No hay elementos registrados.</p>';
         }
 
         function openCrudModal(table, id = null) {
@@ -777,13 +891,35 @@
                 'services': ['icon', 'title', 'description'],
                 'projects': ['title', 'category', 'image_url', 'link'],
                 'testimonials': ['name', 'role', 'company', 'content', 'avatar_url'],
-                'faq': ['question', 'answer']
+                'faq': ['question', 'answer'],
+                'erp_users': ['username', 'email', 'password', 'role']
             };
 
             fields[table].forEach(f => {
-                form.innerHTML += `<div class="field-group"><label>${f.replace('_', ' ')}</label>${f === 'description' || f === 'content' || f === 'answer' ? `<textarea id="val-${f}" rows="3"></textarea>` : `<input id="val-${f}">`}</div>`;
+                let inputHtml = "";
+                if (f === 'description' || f === 'content' || f === 'answer') {
+                    inputHtml = `<textarea id="val-${f}" rows="3"></textarea>`;
+                } else if (f === 'image_url' || f === 'avatar_url') {
+                    inputHtml = `
+                        <div class="upload-area" onclick="triggerFileUpload('modal-img')">
+                            <i class="fas fa-image"></i>
+                            <p>Subir Imagen</p>
+                            <input type="file" id="modal-img-input" class="hidden" accept="image/*" onchange="previewSelectedImage(this, 'modal-preview')">
+                        </div>
+                        <img id="modal-preview" class="preview-img hidden">
+                        <input type="hidden" id="val-${f}">
+                    `;
+                } else if (f === 'role') {
+                    inputHtml = `<select id="val-role"><option value="admin">Admin ERP</option><option value="editor">Editor Web</option></select>`;
+                } else {
+                    inputHtml = `<input id="val-${f}" type="${f === 'password' ? 'password' : 'text'}">`;
+                }
+                form.innerHTML += `<div class="field-group"><label>${f.replace('_', ' ')}</label>${inputHtml}</div>`;
             });
-            form.innerHTML += `<div class="field-group"><label>Orden de visualización</label><input type="number" id="val-order_index"></div>`;
+
+            if (table !== 'erp_users') {
+                form.innerHTML += `<div class="field-group"><label>Orden Visual</label><input type="number" id="val-order_index"></div>`;
+            }
 
             if (id) fillModal(table, id);
             document.getElementById('editor-modal').classList.remove('hidden');
@@ -795,19 +931,19 @@
             Object.keys(data).forEach(k => {
                 const el = document.getElementById('val-' + k);
                 if (el) el.value = data[k];
+                if ((k === 'image_url' || k === 'avatar_url') && data[k]) {
+                    const prev = document.getElementById('modal-preview');
+                    if (prev) { prev.src = data[k]; prev.classList.remove('hidden'); }
+                }
             });
         }
 
         async function saveItem() {
             const payload = {};
-            document.querySelectorAll('[id^="val-"]').forEach(i => {
-                payload[i.id.replace('val-', '')] = i.value;
-            });
-
+            document.querySelectorAll('[id^="val-"]').forEach(i => { payload[i.id.replace('val-', '')] = i.value; });
             if (currentId) await supabaseClient.from(currentTable).update(payload).eq('id', currentId);
             else await supabaseClient.from(currentTable).insert([payload]);
-
-            alert("Operación completada con éxito");
+            alert("¡Cambios realizados con éxito!");
             closeModal();
             loadLists();
         }
