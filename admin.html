@@ -514,7 +514,7 @@
     <aside id="sidebar">
         <div class="logo-area">CASSBRIEL <span>TECH</span></div>
 
-        <div class="nav-group">
+        <div class="nav-group" id="nav-erp">
             <p class="nav-label">Finanzas ERP</p>
             <div class="nav-item active" onclick="switchSection('dashboard')"><i class="fas fa-chart-line"></i>
                 Dashboard Hoy</div>
@@ -522,7 +522,7 @@
             </div>
         </div>
 
-        <div class="nav-group">
+        <div class="nav-group" id="nav-web">
             <p class="nav-label">Infraestructura Web</p>
             <div class="nav-item" onclick="switchSection('web-config')"><i class="fas fa-globe"></i> Config Global</div>
             <div class="nav-item" onclick="switchSection('web-page')"><i class="fas fa-desktop"></i> Home Page</div>
@@ -532,7 +532,7 @@
             </div>
         </div>
 
-        <div class="nav-group">
+        <div class="nav-group" id="nav-admin">
             <p class="nav-label">Administración</p>
             <div class="nav-item" onclick="switchSection('users')"><i class="fas fa-user-shield"></i> Usuarios &
                 Permisos</div>
@@ -821,8 +821,35 @@
             document.getElementById('login-overlay').classList.add('hidden');
             document.getElementById('main-content').classList.remove('hidden');
             document.querySelector('.user-pill').innerText = roleLabel;
+
+            // Apply Permissions
+            applyPermissions(roleLabel);
+
             showToast(`Acceso Concedido: Sesión como ${roleLabel}`);
             initSystem();
+        }
+
+        function applyPermissions(role) {
+            const erp = document.getElementById('nav-erp');
+            const web = document.getElementById('nav-web');
+            const admin = document.getElementById('nav-admin');
+
+            // Reset visibility
+            erp.classList.remove('hidden');
+            web.classList.remove('hidden');
+            admin.classList.remove('hidden');
+
+            if (role === "Editor Web") {
+                erp.classList.add('hidden');
+                admin.classList.add('hidden');
+                switchSection('web-config'); // Default section for editors
+            } else if (role === "Admin ERP") {
+                admin.classList.add('hidden');
+                switchSection('dashboard');
+            } else {
+                // Master Admin sees all
+                switchSection('dashboard');
+            }
         }
 
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
@@ -837,18 +864,34 @@
         }
 
         function switchSection(id) {
+            const navGroups = {
+                'dashboard': 'nav-erp', 'finance': 'nav-erp',
+                'web-config': 'nav-web', 'web-page': 'nav-web', 'web-portfolio': 'nav-web', 'web-social': 'nav-web',
+                'users': 'nav-admin'
+            };
+            const parentGroup = document.getElementById(navGroups[id]);
+            if (parentGroup && parentGroup.classList.contains('hidden')) {
+                return; // Silently block if trying to access hidden section
+            }
+
             activeTab = id;
             document.querySelectorAll('.content-sec').forEach(s => s.classList.add('hidden'));
             document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
             document.getElementById('sec-' + id).classList.remove('hidden');
-            event.currentTarget.classList.add('active');
+
+            // Highlight nav item
+            document.querySelectorAll('.nav-item').forEach(item => {
+                if (item.getAttribute('onclick') && item.getAttribute('onclick').includes(`'${id}'`)) {
+                    item.classList.add('active');
+                }
+            });
 
             const titles = {
                 'dashboard': 'Dashboard de Finanzas',
                 'finance': 'Registro de Operaciones',
                 'web-config': 'Identidad & Contacto',
                 'web-page': 'Contenido Home Page',
-                'web-portfolio': 'Gallería de Proyectos',
+                'web-portfolio': 'Galería de Imágenes',
                 'web-social': 'Testimonios & Social',
                 'users': 'Usuarios & Permisos'
             };
