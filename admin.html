@@ -784,15 +784,45 @@
         }
 
         // --- 3. AUTH ---
-        function masterLogin() {
+        async function masterLogin() {
             const u = document.getElementById('username').value;
             const p = document.getElementById('password').value;
+            const btn = event.target;
+
+            if (!u || !p) return showToast("Ingresa usuario y contraseña", "error");
+
+            // Hardcoded Fallback
             if (u === 'admin' && p === '1234') {
-                document.getElementById('login-overlay').classList.add('hidden');
-                document.getElementById('main-content').classList.remove('hidden');
-                showToast("Acceso Concedido: Núcleo Estable");
-                initSystem();
-            } else showToast("Error de Acceso: Llave no autorizada.", "error");
+                proceedToDashboard("Master Admin");
+                return;
+            }
+
+            // Database Check
+            btn.disabled = true;
+            btn.innerText = "Verificando...";
+
+            const { data: user, error } = await supabaseClient
+                .from('erp_users')
+                .select('*')
+                .eq('username', u)
+                .eq('password', p)
+                .single();
+
+            if (user) {
+                proceedToDashboard(user.role === 'admin' ? 'Admin ERP' : 'Editor Web');
+            } else {
+                showToast("Error de Acceso: Credenciales incorrectas.", "error");
+                btn.disabled = false;
+                btn.innerText = "Acceder al Núcleo";
+            }
+        }
+
+        function proceedToDashboard(roleLabel) {
+            document.getElementById('login-overlay').classList.add('hidden');
+            document.getElementById('main-content').classList.remove('hidden');
+            document.querySelector('.user-pill').innerText = roleLabel;
+            showToast(`Acceso Concedido: Sesión como ${roleLabel}`);
+            initSystem();
         }
 
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
