@@ -851,11 +851,28 @@
                         <b>${t.concept}</b>
                         <span>${t.type === 'income' ? 'Ingreso' : 'Salida'} - ${t.date}</span>
                     </div>
-                    <div style="font-weight: 800; color: ${t.type === 'income' ? 'var(--accent-green)' : 'var(--accent-red)'}">
-                        ${t.type === 'income' ? '+' : '-'} S/ ${parseFloat(t.amount).toFixed(2)}
+                    <div style="display: flex; align-items: center; gap: 20px;">
+                        <div style="font-weight: 800; color: ${t.type === 'income' ? 'var(--accent-green)' : 'var(--accent-red)'}">
+                            ${t.type === 'income' ? '+' : '-'} S/ ${parseFloat(t.amount).toFixed(2)}
+                        </div>
+                        <button class="btn-circle del" onclick="deleteTransaction('${t.id}')" title="Eliminar Registro">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
                 </div>
             `).join('') : '<p style="text-align: center; color: var(--text-muted); padding: 10px;">Sin movimientos registrados hoy.</p>';
+        }
+
+        async function deleteTransaction(id) {
+            if (confirm("¿Estás seguro de que deseas eliminar este registro contable?")) {
+                const { error } = await supabaseClient.from('erp_transactions').delete().eq('id', id);
+                if (error) {
+                    showToast("Error al eliminar: " + error.message, "error");
+                } else {
+                    showToast("Registro eliminado correctamente");
+                    loadERP();
+                }
+            }
         }
 
         async function saveFinance(type) {
