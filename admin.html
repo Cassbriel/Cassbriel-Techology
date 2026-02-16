@@ -936,9 +936,13 @@
             loadERP();
             loadWebConfig();
             loadLists();
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('fin-inc-date').value = today;
-            document.getElementById('fin-exp-date').value = today;
+
+            // Usar fecha local para inicializar los campos de fecha
+            const now = new Date();
+            const todayLocal = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+
+            if (document.getElementById('fin-inc-date')) document.getElementById('fin-inc-date').value = todayLocal;
+            if (document.getElementById('fin-exp-date')) document.getElementById('fin-exp-date').value = todayLocal;
         }
 
         function switchSection(id) {
@@ -979,11 +983,16 @@
 
         // --- 3. ERP LOGIC ---
         async function loadERP() {
-            // Usar fecha local para el Dashboard, ya que el calendario local es el que importa al usuario
+            // Usar fecha local para el Dashboard
             const now = new Date();
             const today = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
 
-            const { data: trans, error } = await supabaseClient.from('erp_transactions').select('*').eq('date', today);
+            // Cargar transacciones de HOY para el Dashboard
+            const { data: trans, error } = await supabaseClient
+                .from('erp_transactions')
+                .select('*')
+                .eq('date', today)
+                .order('created_at', { ascending: false });
 
             if (error) {
                 console.error("Error al cargar ERP:", error);
@@ -993,8 +1002,9 @@
             let inc = 0, exp = 0;
             if (trans) {
                 trans.forEach(t => {
-                    if (t.type === 'income') inc += parseFloat(t.amount);
-                    else exp += parseFloat(t.amount);
+                    const amt = parseFloat(t.amount) || 0;
+                    if (t.type === 'income') inc += amt;
+                    else exp += amt;
                 });
             }
 
@@ -1002,8 +1012,21 @@
             document.getElementById('dash-expense').innerText = `S/ ${exp.toFixed(2)}`;
             document.getElementById('dash-balance').innerText = `S/ ${(inc - exp).toFixed(2)}`;
 
+            // Mostrar también las últimas 5 transacciones aunque no sean de hoy, si hoy está vacío
+            // O mejor: siempre mostrar una mezcla de hoy y recientes para que el usuario sepa que SÍ se grabó
+            let listToDisplay = trans;
+
+            if (!trans || trans.length === 0) {
+                const { data: recent } = await supabaseClient
+                    .from('erp_transactions')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(10);
+                listToDisplay = recent;
+            }
+
             const list = document.getElementById('transactions-list');
-            list.innerHTML = trans && trans.length ? trans.map(t => `
+            list.innerHTML = listToDisplay && listToDisplay.length ? listToDisplay.map(t => `
                 <div class="manager-item">
                     <div class="item-info">
                         <b>${t.concept}</b>

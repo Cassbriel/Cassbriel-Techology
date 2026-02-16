@@ -385,9 +385,10 @@
             document.getElementById('current-date').innerText = new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
             // Set default dates
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('inc-date').value = today;
-            document.getElementById('exp-date').value = today;
+            const now = new Date();
+            const todayLocal = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+            document.getElementById('inc-date').value = todayLocal;
+            document.getElementById('exp-date').value = todayLocal;
 
             loadCounters();
         }
@@ -398,15 +399,16 @@
 
         // 3. CARGA DE DATOS DESDE SUPABASE
         async function loadCounters() {
-            const today = new Date().toISOString().split('T')[0];
+            const now = new Date();
+            const today = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
 
             // Fetch Incomes Today
             const { data: incomes } = await supabaseClient.from('erp_transactions').select('amount').eq('type', 'income').eq('date', today);
             // Fetch Expenses Today
             const { data: expenses } = await supabaseClient.from('erp_transactions').select('amount').eq('type', 'expense').eq('date', today);
 
-            const totalInc = (incomes || []).reduce((acc, curr) => acc + parseFloat(curr.amount), 0);
-            const totalExp = (expenses || []).reduce((acc, curr) => acc + parseFloat(curr.amount), 0);
+            const totalInc = (incomes || []).reduce((acc, curr) => acc + (parseFloat(curr.amount) || 0), 0);
+            const totalExp = (expenses || []).reduce((acc, curr) => acc + (parseFloat(curr.amount) || 0), 0);
 
             document.getElementById('total-income').innerText = `S/ ${totalInc.toFixed(2)}`;
             document.getElementById('total-expense').innerText = `S/ ${totalExp.toFixed(2)}`;
@@ -418,15 +420,28 @@
             const concept = document.getElementById(`${type === 'income' ? 'inc' : 'exp'}-concept`).value;
             const amount = document.getElementById(`${type === 'income' ? 'inc' : 'exp'}-amount`).value;
             const date = document.getElementById(`${type === 'income' ? 'inc' : 'exp'}-date`).value;
+            const btn = event.target;
 
             if (!concept || !amount || !date) {
                 alert("Por favor completa todos los campos");
                 return;
             }
 
+            btn.disabled = true;
+            btn.innerText = "Guardando...";
+
             const { error } = await supabaseClient.from('erp_transactions').insert([
-                { concept, amount: parseFloat(amount), date, type }
+                {
+                    concept,
+                    amount: parseFloat(amount),
+                    date,
+                    type,
+                    recorded_by: currentUser ? currentUser.name : 'Super Admin'
+                }
             ]);
+
+            btn.disabled = false;
+            btn.innerText = type === 'income' ? 'Registrar Ingreso' : 'Registrar Egreso';
 
             if (error) {
                 alert("Error al guardar: " + error.message);
