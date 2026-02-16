@@ -895,6 +895,21 @@
             }
         }
 
+        function subscribeRealtime() {
+            // Suscribirse a cambios en la tabla erp_transactions
+            supabaseClient
+                .channel('erp-realtime')
+                .on('postgres_changes', {
+                    event: '*',
+                    schema: 'public',
+                    table: 'erp_transactions'
+                }, payload => {
+                    console.log('Cambio detectado:', payload);
+                    loadERP(); // Recargar datos automáticamente
+                })
+                .subscribe();
+        }
+
         function proceedToDashboard(roleLabel) {
             document.getElementById('login-overlay').classList.add('hidden');
             document.getElementById('main-content').classList.remove('hidden');
@@ -936,6 +951,7 @@
             loadERP();
             loadWebConfig();
             loadLists();
+            subscribeRealtime(); // Activar tiempo real
 
             // Usar fecha local para inicializar los campos de fecha
             const now = new Date();

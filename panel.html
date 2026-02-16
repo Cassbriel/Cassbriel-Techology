@@ -391,6 +391,21 @@
             document.getElementById('exp-date').value = todayLocal;
 
             loadCounters();
+            subscribeRealtime(); // Activar tiempo real
+        }
+
+        function subscribeRealtime() {
+            supabaseClient
+                .channel('panel-realtime')
+                .on('postgres_changes', {
+                    event: '*',
+                    schema: 'public',
+                    table: 'erp_transactions'
+                }, payload => {
+                    console.log('Actualización recibida:', payload);
+                    loadCounters();
+                })
+                .subscribe();
         }
 
         function handleLogout() {
