@@ -484,6 +484,31 @@
         .toast i {
             font-size: 1.2rem;
         }
+
+        /* --- Password Toggle --- */
+        .pass-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .pass-wrapper input {
+            padding-right: 45px !important;
+        }
+
+        .toggle-pass {
+            position: absolute;
+            right: 15px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+            z-index: 10;
+            font-size: 1rem;
+        }
+
+        .toggle-pass:hover {
+            color: var(--primary);
+        }
     </style>
 </head>
 
@@ -497,16 +522,21 @@
             <div class="logo-area" style="font-size: 1.8rem; justify-content: center;">CASSBRIEL <span>MASTER</span>
             </div>
             <p style="color: var(--text-muted); margin-bottom: 35px;">Control Neural de Empresa & Web</p>
-            <div class="field-group">
-                <label>Usuario</label>
-                <input type="text" id="username" placeholder="Ingresa tu usuario">
+            <div onkeydown="if(event.key==='Enter') masterLogin(event)">
+                <div class="field-group">
+                    <label>Usuario</label>
+                    <input type="text" id="username" placeholder="Ingresa tu usuario">
+                </div>
+                <div class="field-group">
+                    <label>Clave</label>
+                    <div class="pass-wrapper">
+                        <input type="password" id="password" placeholder="Clave">
+                        <i class="fas fa-eye toggle-pass" onclick="togglePasswordVisibility('password', this)"></i>
+                    </div>
+                </div>
+                <button class="btn-action" style="width: 100%; justify-content: center; margin-top: 20px;"
+                    onclick="masterLogin(event)">Acceder al Núcleo</button>
             </div>
-            <div class="field-group">
-                <label>Clave</label>
-                <input type="password" id="password" placeholder="Clave">
-            </div>
-            <button class="btn-action" style="width: 100%; justify-content: center; margin-top: 20px;"
-                onclick="masterLogin()">Acceder al Núcleo</button>
         </div>
     </div>
 
@@ -801,38 +831,67 @@
         }
 
         // --- 3. AUTH ---
-        async function masterLogin() {
+        async function masterLogin(e) {
+            if (e) e.preventDefault();
             const u = document.getElementById('username').value;
             const p = document.getElementById('password').value;
-            const btn = event.target;
+            const btn = document.querySelector('#login-overlay .btn-action');
 
             if (!u || !p) return showToast("Ingresa usuario y contraseña", "error");
 
-            // Updated Fallback Credentials
+            // --- 1. Credenciales de Respaldo (Hardcoded) ---
             if (u === 'Cassbriel' && p === 'Cassiel@210123') {
                 activeUserName = "Cassbriel";
                 proceedToDashboard("Master Admin");
                 return;
             }
 
-            // Database Check
+            // --- 2. Verificación en Base de Datos (Supabase) ---
             btn.disabled = true;
-            btn.innerText = "Verificando...";
+            btn.innerText = "Verificando Auth...";
 
-            const { data: user, error } = await supabaseClient
-                .from('erp_users')
-                .select('*')
-                .eq('username', u)
-                .eq('password', p)
-                .single();
+            try {
+                const { data: user, error } = await supabaseClient
+                    .from('erp_users')
+                    .select('*')
+                    .eq('username', u)
+                    .eq('password', p)
+                    .single();
 
-            if (user) {
-                activeUserName = user.username;
-                proceedToDashboard(user.role === 'admin' ? 'Admin ERP' : 'Editor Web');
-            } else {
-                showToast("Error de Acceso: Credenciales incorrectas.", "error");
+                if (error) {
+                    console.error("Error de Supabase:", error);
+                    if (error.code === 'PGRST116') {
+                        showToast("Usuario o clave incorrectos", "error");
+                    } else {
+                        showToast("Error de conexión: " + error.message, "error");
+                    }
+                    btn.disabled = false;
+                    btn.innerText = "Acceder al Núcleo";
+                    return;
+                }
+
+                if (user) {
+                    activeUserName = user.username;
+                    proceedToDashboard(user.role === 'admin' ? 'Admin ERP' : 'Editor Web');
+                }
+            } catch (err) {
+                console.error("Error crítico:", err);
+                showToast("Error de sistema al validar", "error");
                 btn.disabled = false;
                 btn.innerText = "Acceder al Núcleo";
+            }
+        }
+
+        function togglePasswordVisibility(fieldId, icon) {
+            const field = document.getElementById(fieldId);
+            if (field.type === "password") {
+                field.type = "text";
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                field.type = "password";
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
             }
         }
 
@@ -1135,8 +1194,14 @@
                     `;
                 } else if (f === 'role') {
                     inputHtml = `<select id="val-role"><option value="admin">Admin ERP</option><option value="editor">Editor Web</option></select>`;
+                } else if (f === 'password') {
+                    inputHtml = `
+                        <div class="pass-wrapper">
+                            <input id="val-${f}" type="password">
+                            <i class="fas fa-eye toggle-pass" onclick="togglePasswordVisibility('val-${f}', this)"></i>
+                        </div>`;
                 } else {
-                    inputHtml = `<input id="val-${f}" type="${f === 'password' ? 'password' : 'text'}">`;
+                    inputHtml = `<input id="val-${f}" type="text">`;
                 }
                 form.innerHTML += `<div class="field-group"><label>${f.replace('_', ' ')}</label>${inputHtml}</div>`;
             });

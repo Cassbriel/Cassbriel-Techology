@@ -232,6 +232,31 @@
                 display: flex !important;
             }
         }
+
+        /* --- Password Toggle --- */
+        .pass-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .pass-wrapper input {
+            padding-right: 45px !important;
+            margin-bottom: 0;
+        }
+
+        .toggle-pass {
+            position: absolute;
+            right: 15px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+            z-index: 10;
+        }
+
+        .toggle-pass:hover {
+            color: var(--primary);
+        }
     </style>
 </head>
 
@@ -246,7 +271,10 @@
             </p>
             <div class="form">
                 <input id="login-user" type="text" placeholder="Usuario (admin)">
-                <input id="login-pass" type="password" placeholder="Contraseña (1234)">
+                <div class="pass-wrapper" style="margin-bottom: 15px;">
+                    <input id="login-pass" type="password" placeholder="Contraseña (1234)">
+                    <i class="fas fa-eye toggle-pass" onclick="togglePasswordVisibility('login-pass', this)"></i>
+                </div>
                 <button onclick="handleLogin()">Iniciar Sesión</button>
             </div>
         </div>
@@ -321,6 +349,19 @@
         const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
 
         let currentUser = null;
+
+        function togglePasswordVisibility(fieldId, icon) {
+            const field = document.getElementById(fieldId);
+            if (field.type === "password") {
+                field.type = "text";
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                field.type = "password";
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
 
         // 2. LÓGICA DE LOGIN
         async function handleLogin() {
