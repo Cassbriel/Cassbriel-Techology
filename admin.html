@@ -592,6 +592,18 @@
 
         <!-- SECCIÓN: DASHBOARD FINANZAS -->
         <section id="sec-dashboard" class="content-sec">
+            <div class="section-header" style="flex-wrap: wrap; gap: 15px;">
+                <div>
+                    <h2>Dashboard de Finanzas</h2>
+                    <p>Control de ingresos, egresos y liquidez de Cassbriel Technology</p>
+                </div>
+                <div
+                    style="display: flex; align-items: center; gap: 10px; background: var(--surface); padding: 8px 15px; border-radius: 12px; border: 1px solid var(--border);">
+                    <span style="font-size: 0.85rem; color: var(--text-muted);">Ver día:</span>
+                    <input type="date" id="dash-filter-date" onchange="loadERP()"
+                        style="background: transparent; border: none; color: var(--primary); font-weight: 700; outline: none; cursor: pointer;">
+                </div>
+            </div>
             <div class="stats-grid">
                 <div class="stat-card green">
                     <i class="fas fa-arrow-trend-up"></i>
@@ -905,7 +917,11 @@
                     table: 'erp_transactions'
                 }, payload => {
                     console.log('Cambio detectado:', payload);
-                    loadERP(); // Recargar datos automáticamente
+                    // Solo recargar si el cambio afecta la fecha actualmente seleccionada
+                    const filterDate = document.getElementById('dash-filter-date').value;
+                    if (payload.new && payload.new.date === filterDate || payload.old && payload.old.date === filterDate) {
+                        loadERP();
+                    }
                 })
                 .subscribe();
         }
@@ -948,15 +964,17 @@
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
 
         async function initSystem() {
+            // Inicializar fecha del dashboard con hoy local
+            const now = new Date();
+            const todayLocal = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+            document.getElementById('dash-filter-date').value = todayLocal;
+
             loadERP();
             loadWebConfig();
             loadLists();
-            subscribeRealtime(); // Activar tiempo real
+            subscribeRealtime();
 
             // Usar fecha local para inicializar los campos de fecha
-            const now = new Date();
-            const todayLocal = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-
             if (document.getElementById('fin-inc-date')) document.getElementById('fin-inc-date').value = todayLocal;
             if (document.getElementById('fin-exp-date')) document.getElementById('fin-exp-date').value = todayLocal;
         }
@@ -999,15 +1017,14 @@
 
         // --- 3. ERP LOGIC ---
         async function loadERP() {
-            // Usar fecha local para el Dashboard
-            const now = new Date();
-            const today = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+            const filterDate = document.getElementById('dash-filter-date').value;
+            if (!filterDate) return;
 
-            // Cargar transacciones de HOY para el Dashboard
+            // Cargar transacciones del día seleccionado
             const { data: trans, error } = await supabaseClient
                 .from('erp_transactions')
                 .select('*')
-                .eq('date', today)
+                .eq('date', filterDate)
                 .order('created_at', { ascending: false });
 
             if (error) {
