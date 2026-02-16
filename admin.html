@@ -597,11 +597,17 @@
                     <h2>Dashboard de Finanzas</h2>
                     <p>Control de ingresos, egresos y liquidez de Cassbriel Technology</p>
                 </div>
-                <div
-                    style="display: flex; align-items: center; gap: 10px; background: var(--surface); padding: 8px 15px; border-radius: 12px; border: 1px solid var(--border);">
-                    <span style="font-size: 0.85rem; color: var(--text-muted);">Ver día:</span>
-                    <input type="date" id="dash-filter-date" onchange="loadERP()"
-                        style="background: transparent; border: none; color: var(--primary); font-weight: 700; outline: none; cursor: pointer;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button class="btn-action" onclick="showDailyHistory()"
+                        style="background: var(--surface); color: var(--text); border: 1px solid var(--border);">
+                        <i class="fas fa-list-check"></i> Historial de Cuadres
+                    </button>
+                    <div
+                        style="display: flex; align-items: center; gap: 10px; background: var(--surface); padding: 8px 15px; border-radius: 12px; border: 1px solid var(--border);">
+                        <span style="font-size: 0.85rem; color: var(--text-muted);">Ver día:</span>
+                        <input type="date" id="dash-filter-date" onchange="loadERP()"
+                            style="background: transparent; border: none; color: var(--primary); font-weight: 700; outline: none; cursor: pointer;">
+                    </div>
                 </div>
             </div>
             <div class="stats-grid">
@@ -1016,6 +1022,53 @@
         }
 
         // --- 3. ERP LOGIC ---
+        async function showDailyHistory() {
+            document.getElementById('modal-history').classList.remove('hidden');
+            const tbody = document.getElementById('history-table-body');
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Cargando historial...</td></tr>';
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('erp_transactions')
+                    .select('date, amount, type')
+                    .order('date', { ascending: false });
+
+                if (error) throw error;
+
+                // Agrupar por fecha
+                const groups = {};
+                (data || []).forEach(t => {
+                    if (!groups[t.date]) groups[t.date] = { inc: 0, exp: 0 };
+                    const amt = parseFloat(t.amount) || 0;
+                    if (t.type === 'income') groups[t.date].inc += amt;
+                    else groups[t.date].exp += amt;
+                });
+
+                const sortedDates = Object.keys(groups).sort((a, b) => new Date(b) - new Date(a));
+
+                tbody.innerHTML = sortedDates.length ? sortedDates.map(date => {
+                    const g = groups[date];
+                    const balance = g.inc - g.exp;
+                    return `
+                        <tr>
+                            <td style="padding: 12px; border-bottom: 1px solid var(--border); font-family: monospace;">${date}</td>
+                            <td style="padding: 12px; border-bottom: 1px solid var(--border); color: var(--accent-green);">S/ ${g.inc.toFixed(2)}</td>
+                            <td style="padding: 12px; border-bottom: 1px solid var(--border); color: var(--accent-red);">S/ ${g.exp.toFixed(2)}</td>
+                            <td style="padding: 12px; border-bottom: 1px solid var(--border); font-weight: 800; color: ${balance >= 0 ? 'var(--primary)' : 'var(--accent-red)'}">S/ ${balance.toFixed(2)}</td>
+                        </tr>
+                    `;
+                }).join('') : '<tr><td colspan="4" style="text-align:center; padding:20px;">No hay transacciones registradas.</td></tr>';
+
+            } catch (err) {
+                console.error("Error historial:", err);
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--accent-red); padding:20px;">Error al cargar datos.</td></tr>';
+            }
+        }
+
+        function closeHistoryModal() {
+            document.getElementById('modal-history').classList.add('hidden');
+        }
+
         async function loadERP() {
             const filterDate = document.getElementById('dash-filter-date').value;
             if (!filterDate) return;
@@ -1302,6 +1355,34 @@
 
         function closeModal() { document.getElementById('editor-modal').classList.add('hidden'); }
     </script>
+    <!-- MODAL: HISTORIAL DE CUADRES -->
+    <div id="modal-history" class="modal-overlay hidden" style="z-index: 2000;">
+        <div class="modal-card" style="max-width: 800px; width: 95%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3><i class="fas fa-file-invoice-dollar" style="color: var(--primary);"></i> Historial de Cuadres
+                    Diarios</h3>
+                <button class="btn-circle" onclick="closeHistoryModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div style="max-height: 60vh; overflow-y: auto;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                    <thead style="position: sticky; top: 0; background: var(--glass-bg); z-index: 1;">
+                        <tr>
+                            <th style="padding: 12px; border-bottom: 1px solid var(--border);">Fecha</th>
+                            <th style="padding: 12px; border-bottom: 1px solid var(--border);">Ingresos</th>
+                            <th style="padding: 12px; border-bottom: 1px solid var(--border);">Egresos</th>
+                            <th style="padding: 12px; border-bottom: 1px solid var(--border);">Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-table-body">
+                        <!-- Cargado dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+            <div style="margin-top: 20px; text-align: right;">
+                <button class="btn-action" onclick="closeHistoryModal()">Cerrar Historial</button>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>
