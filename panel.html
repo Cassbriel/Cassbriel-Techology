@@ -316,6 +316,11 @@
                     <h4>Balance Diario</h4>
                     <div class="amount" id="total-balance">S/ 0.00</div>
                 </div>
+                <!-- NUEVO: Balance Total General -->
+                <div class="stat-card bal" style="border-bottom: 3px solid #a55eea;">
+                    <h4>Balance Total</h4>
+                    <div class="amount" id="total-balance-global">S/ 0.00</div>
+                </div>
             </div>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
@@ -485,17 +490,34 @@
             const now = new Date();
             const today = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
 
-            // Fetch Incomes Today
-            const { data: incomes } = await supabaseClient.from('erp_transactions').select('amount').eq('type', 'income').eq('date', today);
-            // Fetch Expenses Today
-            const { data: expenses } = await supabaseClient.from('erp_transactions').select('amount').eq('type', 'expense').eq('date', today);
+            // Fetch All Transactions for today in one call
+            const { data: transToday } = await supabaseClient.from('erp_transactions').select('amount, type').eq('date', today);
 
-            const totalInc = (incomes || []).reduce((acc, curr) => acc + (parseFloat(curr.amount) || 0), 0);
-            const totalExp = (expenses || []).reduce((acc, curr) => acc + (parseFloat(curr.amount) || 0), 0);
+            let incCents = 0, expCents = 0;
+            (transToday || []).forEach(t => {
+                const amtCents = Math.round((parseFloat(t.amount) || 0) * 100);
+                if (t.type === 'income') incCents += amtCents;
+                else expCents += amtCents;
+            });
+
+            const totalInc = incCents / 100;
+            const totalExp = expCents / 100;
 
             document.getElementById('total-income').innerText = `S/ ${totalInc.toFixed(2)}`;
             document.getElementById('total-expense').innerText = `S/ ${totalExp.toFixed(2)}`;
             document.getElementById('total-balance').innerText = `S/ ${(totalInc - totalExp).toFixed(2)}`;
+
+            // --- BALANCE TOTAL (ACUMULADO HISTÓRICO) ---
+            const { data: allData } = await supabaseClient.from('erp_transactions').select('amount, type');
+            let globalCents = 0;
+            if (allData) {
+                allData.forEach(t => {
+                    const amtCents = Math.round((parseFloat(t.amount) || 0) * 100);
+                    if (t.type === 'income') globalCents += amtCents;
+                    else globalCents -= amtCents;
+                });
+            }
+            document.getElementById('total-balance-global').innerText = `S/ ${(globalCents / 100).toFixed(2)}`;
         }
 
         // 4. REGISTRO DE TRANSACCIONES

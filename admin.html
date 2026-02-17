@@ -630,6 +630,13 @@
                     <div class="amount" id="dash-balance">S/ 0.00</div>
                     <p style="font-size: 0.8rem; color: var(--primary); margin-top: 10px;">= Liquidez Actual</p>
                 </div>
+                <!-- NUEVO: Balance Total General -->
+                <div class="stat-card blue" style="border-bottom-color: #a55eea;">
+                    <i class="fas fa-vault"></i>
+                    <h4>Balance Total Acumulado</h4>
+                    <div class="amount" id="dash-balance-total">S/ 0.00</div>
+                    <p style="font-size: 0.8rem; color: #a55eea; margin-top: 10px;">Σ Todos los días</p>
+                </div>
             </div>
 
             <div class="card-editor">
@@ -1085,18 +1092,37 @@
                 return;
             }
 
-            let inc = 0, exp = 0;
+            let incCents = 0, expCents = 0;
             if (trans) {
                 trans.forEach(t => {
-                    const amt = parseFloat(t.amount) || 0;
-                    if (t.type === 'income') inc += amt;
-                    else exp += amt;
+                    const amtCents = Math.round((parseFloat(t.amount) || 0) * 100);
+                    if (t.type === 'income') incCents += amtCents;
+                    else expCents += amtCents;
                 });
             }
 
-            document.getElementById('dash-income').innerText = `S/ ${inc.toFixed(2)}`;
-            document.getElementById('dash-expense').innerText = `S/ ${exp.toFixed(2)}`;
-            document.getElementById('dash-balance').innerText = `S/ ${(inc - exp).toFixed(2)}`;
+            const totalInc = incCents / 100;
+            const totalExp = expCents / 100;
+
+            document.getElementById('dash-income').innerText = `S/ ${totalInc.toFixed(2)}`;
+            document.getElementById('dash-expense').innerText = `S/ ${totalExp.toFixed(2)}`;
+            document.getElementById('dash-balance').innerText = `S/ ${(totalInc - totalExp).toFixed(2)}`;
+
+            // --- CÁLCULO DE BALANCE TOTAL (TODOS LOS DÍAS) ---
+            // Usamos un loop para asegurar que traemos todos los datos si superan el límite de 1000
+            const { data: allTransactions } = await supabaseClient
+                .from('erp_transactions')
+                .select('amount, type');
+
+            let totalCents = 0;
+            if (allTransactions) {
+                allTransactions.forEach(t => {
+                    const amtCents = Math.round((parseFloat(t.amount) || 0) * 100);
+                    if (t.type === 'income') totalCents += amtCents;
+                    else totalCents -= amtCents;
+                });
+            }
+            document.getElementById('dash-balance-total').innerText = `S/ ${(totalCents / 100).toFixed(2)}`;
 
             // Mostrar también las últimas 5 transacciones aunque no sean de hoy, si hoy está vacío
             // O mejor: siempre mostrar una mezcla de hoy y recientes para que el usuario sepa que SÍ se grabó
