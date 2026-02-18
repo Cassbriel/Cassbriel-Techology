@@ -321,6 +321,26 @@
                     <h4>Balance Total</h4>
                     <div class="amount" id="total-balance-global">S/ 0.00</div>
                 </div>
+
+                <!-- NUEVOS: Balances por Método -->
+                <div class="stat-card" style="border-bottom: 3px solid #00d2d3;">
+                    <h4>Efectivo Total</h4>
+                    <div class="amount" id="bal-efectivo" style="color: #00d2d3;">S/ 0.00</div>
+                </div>
+                <!-- Box 1: Cuanto dinero está en Yape/Plin (Ingresos) -->
+                <div class="stat-card" style="border-bottom: 3px solid #ff9f43;">
+                    <h4>Yape / Plin (Ingresos)</h4>
+                    <div class="amount" id="yape-plin-inc" style="color: #ff9f43;">S/ 0.00</div>
+                </div>
+                <!-- Box 2: Cuanto se gastó en Yape/Plin -->
+                <div class="stat-card" style="border-bottom: 3px solid #ff4757;">
+                    <h4>Yape / Plin (Gastos)</h4>
+                    <div class="amount" id="yape-plin-exp" style="color: #ff4757;">S/ 0.00</div>
+                </div>
+                <div class="stat-card" style="border-bottom: 3px solid #54a0ff;">
+                    <h4>Transferencias Netas</h4>
+                    <div class="amount" id="bal-transferencia" style="color: #54a0ff;">S/ 0.00</div>
+                </div>
             </div>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
@@ -330,6 +350,11 @@
                     <input id="inc-concept" placeholder="Concepto (ej. Pago de Cliente)">
                     <input id="inc-amount" type="number" step="0.01" placeholder="Monto S/">
                     <input id="inc-date" type="date">
+                    <select id="inc-method">
+                        <option value="Efectivo">Efectivo</option>
+                        <option value="Yape/Plin">Yape/Plin</option>
+                        <option value="Transferencia">Transferencia</option>
+                    </select>
                     <button onclick="addTransaction('income')">Registrar Ingreso</button>
                 </div>
 
@@ -339,6 +364,11 @@
                     <input id="exp-concept" placeholder="Concepto (ej. Pago a Proveedor)">
                     <input id="exp-amount" type="number" step="0.01" placeholder="Monto S/">
                     <input id="exp-date" type="date">
+                    <select id="exp-method">
+                        <option value="Efectivo">Efectivo</option>
+                        <option value="Yape/Plin">Yape/Plin</option>
+                        <option value="Transferencia">Transferencia</option>
+                    </select>
                     <button onclick="addTransaction('expense')"
                         style="background: linear-gradient(135deg, var(--accent-red), #b91c1c);">Registrar
                         Egreso</button>
@@ -430,17 +460,48 @@
 
             loadCounters();
             subscribeRealtime(); // Activar tiempo real
+            requestNotificationPermission(); // Solicitar permiso de notificaciones
+        }
+
+        function requestNotificationPermission() {
+            if ("Notification" in window) {
+                Notification.requestPermission();
+            }
+        }
+
+        function notifyUser(title, body) {
+            if ("Notification" in window && Notification.permission === "granted") {
+                new Notification(title, { body, icon: 'logo.png' });
+            }
+            // También mostrar un toast simple en la UI si se desea, pero el usuario pidió "notificar"
         }
 
         function subscribeRealtime() {
             supabaseClient
                 .channel('panel-realtime')
                 .on('postgres_changes', {
-                    event: '*',
+                    event: 'INSERT',
                     schema: 'public',
                     table: 'erp_transactions'
                 }, payload => {
-                    console.log('Actualización recibida:', payload);
+                    console.log('Nueva transacción detectada:', payload);
+                    const t = payload.new;
+                    const typeText = t.type === 'income' ? 'INGRESO' : 'EGRESO';
+                    notifyUser(`Nueva Transacción: ${typeText}`, `${t.concept} - S/ ${t.amount} (${t.payment_method})`);
+                    loadCounters();
+                })
+                .on('postgres_changes', {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'erp_transactions'
+                }, payload => {
+                    loadCounters();
+                })
+                .on('postgres_changes', {
+                    event: 'DELETE',
+                    schema: 'public',
+                    table: 'erp_transactions'
+                }, payload => {
                     loadCounters();
                 })
                 .subscribe();
@@ -508,16 +569,35 @@
             document.getElementById('total-balance').innerText = `S/ ${(totalInc - totalExp).toFixed(2)}`;
 
             // --- BALANCE TOTAL (ACUMULADO HISTÓRICO) ---
-            const { data: allData } = await supabaseClient.from('erp_transactions').select('amount, type');
-            let globalCents = 0;
+            const { data: allData } = await supabaseClient.from('erp_transactions').select('amount, type, payment_method');
+            let methods = {
+                'Efectivo': 0,
+                'Yape/Plin_inc': 0,
+                'Yape/Plin_exp': 0,
+                'Transferencia': 0
+            };
+
             if (allData) {
                 allData.forEach(t => {
                     const amtCents = Math.round((parseFloat(t.amount) || 0) * 100);
-                    if (t.type === 'income') globalCents += amtCents;
-                    else globalCents -= amtCents;
+                    const method = t.payment_method || 'Efectivo';
+
+                    if (t.type === 'income') {
+                        globalCents += amtCents;
+                        if (method === 'Yape/Plin') methods['Yape/Plin_inc'] += amtCents;
+                        else if (methods.hasOwnProperty(method)) methods[method] += amtCents;
+                    } else {
+                        globalCents -= amtCents;
+                        if (method === 'Yape/Plin') methods['Yape/Plin_exp'] += amtCents;
+                        else if (methods.hasOwnProperty(method)) methods[method] -= amtCents;
+                    }
                 });
             }
             document.getElementById('total-balance-global').innerText = `S/ ${(globalCents / 100).toFixed(2)}`;
+            document.getElementById('bal-efectivo').innerText = `S/ ${(methods['Efectivo'] / 100).toFixed(2)}`;
+            document.getElementById('yape-plin-inc').innerText = `S/ ${(methods['Yape/Plin_inc'] / 100).toFixed(2)}`;
+            document.getElementById('yape-plin-exp').innerText = `S/ ${(methods['Yape/Plin_exp'] / 100).toFixed(2)}`;
+            document.getElementById('bal-transferencia').innerText = `S/ ${(methods['Transferencia'] / 100).toFixed(2)}`;
         }
 
         // 4. REGISTRO DE TRANSACCIONES
@@ -525,9 +605,10 @@
             const concept = document.getElementById(`${type === 'income' ? 'inc' : 'exp'}-concept`).value;
             const amount = document.getElementById(`${type === 'income' ? 'inc' : 'exp'}-amount`).value;
             const date = document.getElementById(`${type === 'income' ? 'inc' : 'exp'}-date`).value;
+            const method = document.getElementById(`${type === 'income' ? 'inc' : 'exp'}-method`).value;
             const btn = event.target;
 
-            if (!concept || !amount || !date) {
+            if (!concept || !amount || !date || !method) {
                 alert("Por favor completa todos los campos");
                 return;
             }
@@ -541,6 +622,7 @@
                     amount: parseFloat(amount),
                     date,
                     type,
+                    payment_method: method,
                     recorded_by: currentUser ? currentUser.name : 'Super Admin'
                 }
             ]);

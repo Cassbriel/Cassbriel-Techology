@@ -637,6 +637,34 @@
                     <div class="amount" id="dash-balance-total">S/ 0.00</div>
                     <p style="font-size: 0.8rem; color: #a55eea; margin-top: 10px;">Σ Todos los días</p>
                 </div>
+
+                <!-- NUEVOS: Balances por Método -->
+                <div class="stat-card" style="border-bottom: 3px solid #00d2d3;">
+                    <i class="fas fa-money-bill-wave" style="color: #00d2d3;"></i>
+                    <h4>Efectivo Total</h4>
+                    <div class="amount" id="bal-efectivo" style="color: #00d2d3;">S/ 0.00</div>
+                    <p style="font-size: 0.8rem; opacity: 0.7; margin-top: 10px;">Fondos en Efectivo</p>
+                </div>
+                <!-- Box 1: Cuanto dinero está en Yape/Plin (Ingresos) -->
+                <div class="stat-card" style="border-bottom: 3px solid #ff9f43;">
+                    <i class="fas fa-mobile-screen-button" style="color: #ff9f43;"></i>
+                    <h4>Yape / Plin (Ingresos)</h4>
+                    <div class="amount" id="yape-plin-inc" style="color: #ff9f43;">S/ 0.00</div>
+                    <p style="font-size: 0.8rem; opacity: 0.7; margin-top: 10px;">Total Recaudado</p>
+                </div>
+                <!-- Box 2: Cuanto se gastó en Yape/Plin -->
+                <div class="stat-card" style="border-bottom: 3px solid #ff4757;">
+                    <i class="fas fa-wallet" style="color: #ff4757;"></i>
+                    <h4>Yape / Plin (Gastos)</h4>
+                    <div class="amount" id="yape-plin-exp" style="color: #ff4757;">S/ 0.00</div>
+                    <p style="font-size: 0.8rem; opacity: 0.7; margin-top: 10px;">Total Gastado</p>
+                </div>
+                <div class="stat-card" style="border-bottom: 3px solid #54a0ff;">
+                    <i class="fas fa-university" style="color: #54a0ff;"></i>
+                    <h4>Transferencias Netas</h4>
+                    <div class="amount" id="bal-transferencia" style="color: #54a0ff;">S/ 0.00</div>
+                    <p style="font-size: 0.8rem; opacity: 0.7; margin-top: 10px;">Banco / Interbancario</p>
+                </div>
             </div>
 
             <div class="card-editor">
@@ -920,19 +948,41 @@
             }
         }
 
+        function notifyUser(title, body) {
+            if ("Notification" in window && Notification.permission === "granted") {
+                new Notification(title, { body, icon: 'logo.png' });
+            }
+            showToast(`${title}: ${body}`); // Toast in-app too
+        }
+
         function subscribeRealtime() {
             // Suscribirse a cambios en la tabla erp_transactions
             supabaseClient
                 .channel('erp-realtime')
                 .on('postgres_changes', {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'erp_transactions'
+                }, payload => {
+                    console.log('Nueva transacción:', payload);
+                    const t = payload.new;
+                    const typeText = t.type === 'income' ? 'INGRESO' : 'EGRESO';
+                    notifyUser(`Nueva Transacción: ${typeText}`, `${t.concept} - S/ ${t.amount} (${t.payment_method})`);
+
+                    const filterDate = document.getElementById('dash-filter-date').value;
+                    if (t.date === filterDate) {
+                        loadERP();
+                    } else {
+                        // Even if not today, we update global balance
+                        calculateGlobalBalances();
+                    }
+                })
+                .on('postgres_changes', {
                     event: '*',
                     schema: 'public',
                     table: 'erp_transactions'
                 }, payload => {
-                    console.log('Cambio detectado:', payload);
-                    // Solo recargar si el cambio afecta la fecha actualmente seleccionada
-                    const filterDate = document.getElementById('dash-filter-date').value;
-                    if (payload.new && payload.new.date === filterDate || payload.old && payload.old.date === filterDate) {
+                    if (payload.eventType !== 'INSERT') {
                         loadERP();
                     }
                 })
@@ -986,6 +1036,10 @@
             loadWebConfig();
             loadLists();
             subscribeRealtime();
+
+            if ("Notification" in window) {
+                Notification.requestPermission();
+            }
 
             // Usar fecha local para inicializar los campos de fecha
             if (document.getElementById('fin-inc-date')) document.getElementById('fin-inc-date').value = todayLocal;
@@ -1108,21 +1162,7 @@
             document.getElementById('dash-expense').innerText = `S/ ${totalExp.toFixed(2)}`;
             document.getElementById('dash-balance').innerText = `S/ ${(totalInc - totalExp).toFixed(2)}`;
 
-            // --- CÁLCULO DE BALANCE TOTAL (TODOS LOS DÍAS) ---
-            // Usamos un loop para asegurar que traemos todos los datos si superan el límite de 1000
-            const { data: allTransactions } = await supabaseClient
-                .from('erp_transactions')
-                .select('amount, type');
-
-            let totalCents = 0;
-            if (allTransactions) {
-                allTransactions.forEach(t => {
-                    const amtCents = Math.round((parseFloat(t.amount) || 0) * 100);
-                    if (t.type === 'income') totalCents += amtCents;
-                    else totalCents -= amtCents;
-                });
-            }
-            document.getElementById('dash-balance-total').innerText = `S/ ${(totalCents / 100).toFixed(2)}`;
+            await calculateGlobalBalances();
 
             // Mostrar también las últimas 5 transacciones aunque no sean de hoy, si hoy está vacío
             // O mejor: siempre mostrar una mezcla de hoy y recientes para que el usuario sepa que SÍ se grabó
@@ -1158,6 +1198,42 @@
                     </div>
                 </div>
             `).join('') : '<p style="text-align: center; color: var(--text-muted); padding: 10px;">Sin movimientos registrados hoy.</p>';
+        }
+
+        async function calculateGlobalBalances() {
+            const { data: allTransactions } = await supabaseClient
+                .from('erp_transactions')
+                .select('amount, type, payment_method');
+
+            let totalCents = 0;
+            let methods = {
+                'Efectivo': 0,
+                'Yape/Plin_inc': 0,
+                'Yape/Plin_exp': 0,
+                'Transferencia': 0
+            };
+
+            if (allTransactions) {
+                allTransactions.forEach(t => {
+                    const amtCents = Math.round((parseFloat(t.amount) || 0) * 100);
+                    const m = t.payment_method || 'Efectivo';
+                    if (t.type === 'income') {
+                        totalCents += amtCents;
+                        if (m === 'Yape/Plin') methods['Yape/Plin_inc'] += amtCents;
+                        else if (methods.hasOwnProperty(m)) methods[m] += amtCents;
+                    } else {
+                        totalCents -= amtCents;
+                        if (m === 'Yape/Plin') methods['Yape/Plin_exp'] += amtCents;
+                        else if (methods.hasOwnProperty(m)) methods[m] -= amtCents;
+                    }
+                });
+            }
+
+            document.getElementById('dash-balance-total').innerText = `S/ ${(totalCents / 100).toFixed(2)}`;
+            document.getElementById('bal-efectivo').innerText = `S/ ${(methods['Efectivo'] / 100).toFixed(2)}`;
+            document.getElementById('yape-plin-inc').innerText = `S/ ${(methods['Yape/Plin_inc'] / 100).toFixed(2)}`;
+            document.getElementById('yape-plin-exp').innerText = `S/ ${(methods['Yape/Plin_exp'] / 100).toFixed(2)}`;
+            document.getElementById('bal-transferencia').innerText = `S/ ${(methods['Transferencia'] / 100).toFixed(2)}`;
         }
 
         async function deleteTransaction(id) {
