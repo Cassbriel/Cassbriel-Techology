@@ -1738,7 +1738,7 @@
             }
 
             // Grouping logic for HR tables
-            const groupableTables = ['employee_advances', 'employee_schedules', 'employee_payments'];
+            const groupableTables = ['employee_advances', 'employee_schedules', 'employee_payments', 'employee_attendance'];
             if (groupableTables.includes(table)) {
                 // Group by employee name
                 const groups = {};
@@ -1769,6 +1769,24 @@
         function renderItemHtml(item, table) {
             const imgSource = item.image_url || item.avatar_url;
             const displayName = item.title || item.name || item.question || item.username || (item.employees ? item.employees.name : 'Desconocido');
+
+            let extraInfo = '';
+            if (table === 'employee_advances') extraInfo = `<span style="color: var(--accent-red); font-weight: bold;">- S/ ${item.amount}</span>`;
+            else if (table === 'employee_attendance') {
+                const color = item.status === 'asistio' ? 'var(--accent-green)' : (item.status === 'falto' ? 'var(--accent-red)' : '#ff9f43');
+                extraInfo = `
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="color: ${color}; font-weight: bold; cursor: help;" onclick="if('${item.notes || ''}') alert('Detalle: ${item.notes || 'Sin notas'}')">
+                            ${item.status.toUpperCase()} ${item.notes ? '<i class="fas fa-info-circle" style="font-size: 0.8rem; margin-left: 5px;"></i>' : ''}
+                        </span>
+                        <span style="font-size: 0.75rem; opacity: 0.7;">Fecha: ${item.attendance_date}</span>
+                        ${item.notes ? `<span style="font-size: 0.85rem; color: var(--text-muted); font-style: italic; margin-top: 4px;">"${item.notes}"</span>` : ''}
+                    </div>
+                `;
+            }
+            else if (table === 'employee_schedules') extraInfo = `<span style="color: var(--primary); font-weight: 500;">${item.day_of_week}: ${item.clock_in} - ${item.clock_out}</span>`;
+            else if (table === 'employee_payments') extraInfo = `<span style="color: var(--accent-green); font-weight: bold;">S/ ${item.net_amount}</span>`;
+
             return `
             <div class="manager-item">
                 <div style="display: flex; align-items: center; gap: 15px;">
@@ -1779,11 +1797,8 @@
                     `}
                     <div class="item-info">
                         <b>${displayName}</b>
-                        ${table === 'employee_advances' ? `<span style="color: var(--accent-red); font-weight: bold;">- S/ ${item.amount}</span>` : ''}
-                        ${table === 'employee_attendance' ? `<span style="color: ${item.status === 'asistio' ? 'var(--accent-green)' : 'var(--accent-red)'}; font-weight: bold;">${item.status.toUpperCase()}</span>` : ''}
-                        ${table === 'employee_schedules' ? `<span style="color: var(--primary); font-weight: 500;">${item.day_of_week}: ${item.clock_in} - ${item.clock_out}</span>` : ''}
-                        ${table === 'employee_payments' ? `<span style="color: var(--accent-green); font-weight: bold;">S/ ${item.net_amount}</span>` : ''}
-                        <span>${item.description || item.category || item.role || item.answer || item.email || item.phone || (table === 'employees' ? 'Sueldo: S/ ' + item.base_salary : '') || (table === 'employee_payments' ? 'Semana: ' + item.period_start + ' al ' + item.period_end : '') || (table === 'employee_attendance' ? 'Fecha: ' + item.attendance_date : '') || 'Sin detalles'}</span>
+                        ${extraInfo}
+                        <span>${item.description || item.category || item.role || item.answer || item.email || item.phone || (table === 'employees' ? 'Sueldo: S/ ' + item.base_salary : '') || (table === 'employee_payments' ? 'Semana: ' + item.period_start + ' al ' + item.period_end : '') || 'Sin detalles'}</span>
                         ${table === 'employees' ? (item.active ? '<span class="status-badge active">Activo</span>' : '<span class="status-badge inactive">Cesado</span>') : ''}
                     </div>
                 </div>
