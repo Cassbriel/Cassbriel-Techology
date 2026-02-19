@@ -562,6 +562,11 @@
             </div>
         </div>
 
+        <div class="nav-group" id="nav-hr">
+            <p class="nav-label">Gestión de Personal</p>
+            <div class="nav-item" onclick="switchSection('hr')"><i class="fas fa-users-gear"></i> Recursos Humanos</div>
+        </div>
+
         <div class="nav-group" id="nav-admin">
             <p class="nav-label">Administración</p>
             <div class="nav-item" onclick="switchSection('users')"><i class="fas fa-user-shield"></i> Usuarios &
@@ -838,6 +843,77 @@
                     <div style="color: var(--primary);">Nivel 30</div>
                 </div>
             </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN: RECURSOS HUMANOS -->
+        <section id="sec-hr" class="content-sec hidden">
+            <div class="section-header"
+                style="margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                <div>
+                    <h2>Gestión de Personal</h2>
+                    <p>Control de sueldos, adelantos y horarios de trabajadores</p>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-action" onclick="openCrudModal('employees')">
+                        <i class="fas fa-user-plus"></i> Nuevo Trabajador
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="card-editor">
+                    <h3><i class="fas fa-users"></i> Trabajadores Activos</h3>
+                    <div id="employees-manager-list"></div>
+                </div>
+
+                <div class="card-editor">
+                    <h3><i class="fas fa-calendar-check"></i> Asistencia Diaria</h3>
+                    <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+                        <button class="btn-action" style="width: 100%;" onclick="openCrudModal('employee_attendance')">
+                            <i class="fas fa-check"></i> Marcar Asistencia
+                        </button>
+                    </div>
+                    <div id="attendance-manager-list"></div>
+                </div>
+            </div>
+
+            <div class="card-editor">
+                <h3><i class="fas fa-hand-holding-dollar"></i> Adelantos & Pagos</h3>
+                <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+                    <button class="btn-action secondary" style="width: 100%;"
+                        onclick="openCrudModal('employee_advances')">
+                        <i class="fas fa-plus"></i> Registrar Adelanto
+                    </button>
+                </div>
+                <div id="advances-manager-list"></div>
+            </div>
+            </div>
+
+            <div class="card-editor">
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 10px;">
+                    <h3><i class="fas fa-calendar-days"></i> Horarios Semanales</h3>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-action secondary" onclick="openCrudModal('employee_bulk_schedule')">
+                            <i class="fas fa-magic"></i> Generar Horario Base
+                        </button>
+                        <button class="btn-action secondary" onclick="openCrudModal('employee_schedules')">
+                            <i class="fas fa-plus"></i> Día Individual
+                        </button>
+                    </div>
+                </div>
+                <div id="schedules-manager-list"></div>
+            </div>
+
+            <div class="card-editor">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h3><i class="fas fa-file-invoice-dollar"></i> Planilla Semanal (Pagos)</h3>
+                    <button class="btn-action" onclick="openCrudModal('employee_payments')">Generar Pago Semanal
+                        <i class="fas fa-plus"></i></button>
+                </div>
+                <div id="payments-manager-list"></div>
+            </div>
         </section>
     </main>
 
@@ -1056,6 +1132,7 @@
         function switchSection(id) {
             const navGroups = {
                 'dashboard': 'nav-erp', 'finance': 'nav-erp',
+                'hr': 'nav-hr',
                 'web-config': 'nav-web', 'web-page': 'nav-web', 'web-portfolio': 'nav-web', 'web-social': 'nav-web',
                 'users': 'nav-admin'
             };
@@ -1083,6 +1160,7 @@
                 'web-page': 'Contenido Home Page',
                 'web-portfolio': 'Galería de Imágenes',
                 'web-social': 'Testimonios & Social',
+                'hr': 'Recursos Humanos',
                 'users': 'Usuarios & Permisos'
             };
             document.getElementById('section-title').innerText = titles[id];
@@ -1346,15 +1424,44 @@
             refreshList('testimonials', 'testimonials-manager-list');
             refreshList('faq', 'faq-manager-list');
             refreshList('erp_users', 'users-manager-list');
+            refreshList('employees', 'employees-manager-list');
+            refreshList('employee_advances', 'advances-manager-list');
+            refreshList('employee_attendance', 'attendance-manager-list');
+            refreshList('employee_schedules', 'schedules-manager-list');
+            refreshList('employee_payments', 'payments-manager-list');
         }
 
         async function refreshList(table, containerId) {
-            const { data } = await supabaseClient.from(table).select('*').order('order_index');
+            let selectQuery = '*';
+            let orderBy = 'order_index';
+            let ascending = true;
+
+            if (table === 'employees') {
+                orderBy = 'name';
+            } else if (table === 'employee_advances') {
+                selectQuery = '*, employees(name)';
+                orderBy = 'date';
+                ascending = false;
+            } else if (table === 'employee_schedules') {
+                selectQuery = '*, employees(name)';
+                orderBy = 'day_of_week';
+            } else if (table === 'employee_attendance') {
+                selectQuery = '*, employees(name)';
+                orderBy = 'attendance_date';
+                ascending = false;
+            } else if (table === 'employee_payments') {
+                selectQuery = '*, employees(name)';
+                orderBy = 'period_end';
+                ascending = false;
+            }
+
+            const { data } = await supabaseClient.from(table).select(selectQuery).order(orderBy, { ascending });
             const target = document.getElementById(containerId);
             if (!target) return;
 
             target.innerHTML = data && data.length ? data.map(item => {
                 const imgSource = item.image_url || item.avatar_url;
+                const displayName = item.title || item.name || item.question || item.username || (item.employees ? item.employees.name : 'Desconocido');
                 return `
                 <div class="manager-item">
                     <div style="display: flex; align-items: center; gap: 15px;">
@@ -1364,8 +1471,13 @@
                             </div>
                         `}
                         <div class="item-info">
-                            <b>${item.title || item.name || item.question || item.username}</b>
-                            <span>${item.description || item.category || item.role || item.answer || item.email || 'Sin descripción'}</span>
+                            <b>${displayName}</b>
+                            ${table === 'employee_advances' ? `<span style="color: var(--accent-red); font-weight: bold;">- S/ ${item.amount}</span>` : ''}
+                            ${table === 'employee_attendance' ? `<span style="color: ${item.status === 'asistio' ? 'var(--accent-green)' : 'var(--accent-red)'}; font-weight: bold;">${item.status.toUpperCase()}</span>` : ''}
+                            ${table === 'employee_schedules' ? `<span style="color: var(--primary);">${item.day_of_week}: ${item.clock_in} - ${item.clock_out}</span>` : ''}
+                            ${table === 'employee_payments' ? `<span style="color: var(--accent-green); font-weight: bold;">S/ ${item.net_amount}</span>` : ''}
+                            <span>${item.description || item.category || item.role || item.answer || item.email || item.phone || (table === 'employees' ? 'Sueldo: S/ ' + item.base_salary : '') || (table === 'employee_payments' ? 'Semana: ' + item.period_start + ' al ' + item.period_end : '') || (table === 'employee_attendance' ? 'Fecha: ' + item.attendance_date : '') || 'Sin detalles'}</span>
+                            ${table === 'employees' && item.active === false ? '<span style="color: var(--accent-red); font-size: 0.8em; margin-left: 10px;">(Cesado)</span>' : ''}
                         </div>
                     </div>
                     <div class="actions">
@@ -1381,7 +1493,7 @@
             }).join('') : '<p style="padding: 30px; text-align: center; color: var(--text-muted); width: 100%;">No hay elementos registrados en esta galería.</p>';
         }
 
-        function openCrudModal(table, id = null) {
+        async function openCrudModal(table, id = null) {
             currentTable = table;
             currentId = id;
             document.getElementById('modal-title-main').innerText = id ? 'EDITAR ELEMENTO' : 'NUEVO ELEMENTO';
@@ -1393,44 +1505,114 @@
                 'projects': ['title', 'category', 'image_url', 'link'],
                 'testimonials': ['name', 'role', 'company', 'content', 'avatar_url'],
                 'faq': ['question', 'answer'],
-                'erp_users': ['username', 'email', 'password', 'role']
+                'erp_users': ['username', 'email', 'password', 'role'],
+                'employees': ['name', 'role', 'base_salary', 'phone', 'email', 'active'],
+                'employee_advances': ['employee_id', 'amount', 'date', 'description', 'status'],
+                'employee_attendance': ['employee_id', 'attendance_date', 'status', 'notes'],
+                'employee_schedules': ['employee_id', 'day_of_week', 'clock_in', 'clock_out'],
+                'employee_bulk_schedule': ['employee_id', 'clock_in', 'clock_out'],
+                'employee_payments': ['employee_id', 'period_start', 'period_end', 'salary_amount', 'advances_total', 'net_amount', 'payment_date', 'notes']
+            };
+            const labelMapping = {
+                'icon': 'Icono (FontAwesome)', 'title': 'Título', 'description': 'Descripción',
+                'category': 'Categoría', 'image_url': 'Imagen', 'link': 'Enlace',
+                'name': 'Nombre', 'role': 'Rol / Cargo', 'company': 'Empresa',
+                'content': 'Contenido', 'avatar_url': 'Foto / Avatar',
+                'question': 'Pregunta', 'answer': 'Respuesta',
+                'username': 'Usuario', 'email': 'Correo', 'password': 'Password',
+                'base_salary': 'Sueldo Base', 'phone': 'Teléfono', 'active': 'Estado',
+                'employee_id': 'Trabajador', 'amount': 'Monto (S/)', 'date': 'Fecha',
+                'status': 'Estado', 'day_of_week': 'Día',
+                'clock_in': 'Entrada', 'clock_out': 'Salida',
+                'period_start': 'Inicio Semana', 'period_end': 'Fin Semana',
+                'salary_amount': 'Sueldo Base (Sem)', 'advances_total': 'Total Adelantos',
+                'net_amount': 'Monto Neto Pagado', 'payment_date': 'Fecha de Pago', 'notes': 'Observaciones',
+                'attendance_date': 'Fecha de Asistencia'
             };
 
-            fields[table].forEach(f => {
+            for (const f of fields[table]) {
+                const labelText = labelMapping[f] || f.replace('_', ' ');
                 let inputHtml = "";
                 if (f === 'description' || f === 'content' || f === 'answer') {
-                    inputHtml = `<textarea id="val-${f}" rows="3"></textarea>`;
+                    inputHtml = '<textarea id="val-' + f + '" rows="3"></textarea>';
                 } else if (f === 'image_url' || f === 'avatar_url') {
-                    inputHtml = `
-                        <div class="upload-area" onclick="triggerFileUpload('modal-img')">
-                            <i class="fas fa-image"></i>
-                            <p>Subir Imagen</p>
-                            <input type="file" id="modal-img-input" class="hidden" accept="image/*" onchange="previewSelectedImage(this, 'modal-preview')">
-                        </div>
-                        <img id="modal-preview" class="preview-img hidden">
-                        <input type="hidden" id="val-${f}">
-                    `;
-                } else if (f === 'role') {
-                    inputHtml = `<select id="val-role"><option value="admin">Admin ERP</option><option value="editor">Editor Web</option></select>`;
-                } else if (f === 'password') {
-                    inputHtml = `
-                        <div class="pass-wrapper">
-                            <input id="val-${f}" type="password">
-                            <i class="fas fa-eye toggle-pass" onclick="togglePasswordVisibility('val-${f}', this)"></i>
-                        </div>`;
-                } else {
-                    inputHtml = `<input id="val-${f}" type="text">`;
-                }
-                form.innerHTML += `<div class="field-group"><label>${f.replace('_', ' ')}</label>${inputHtml}</div>`;
-            });
+                    inputHtml = '<div class="upload-area" onclick="triggerFileUpload(\'modal-img\')">' +
+                        '<i class="fas fa-image"></i>' +
+                        '<p>Subir Imagen</p>' +
+                        '<input type="file" id="modal-img-input" class="hidden" accept="image/*" onchange="previewSelectedImage(this, \'modal-preview\')">' +
+                        '</div>' +
+                        '<img id="modal-preview" class="preview-img hidden">' +
+                        '<input type="hidden" id="val-' + f + '">';
+                } else if (f === 'active') {
+                    inputHtml = '<select id="val-active"><option value="true">Activo</option><option value="false">Inactivo</option></select>';
+                } else if (f === 'role' && table === 'erp_users') {
+                    inputHtml = '<select id="val-role"><option value="admin">Admin ERP</option><option value="editor">Editor Web</option></select>';
+                } else if (f === 'status' && table === 'employee_advances') {
+                    inputHtml = '<select id="val-status"><option value="pendiente">Pendiente</option><option value="descontado">Descontado</option><option value="pagado">Pagado</option></select>';
+                } else if (f === 'status' && table === 'employee_attendance') {
+                    inputHtml = '<select id="val-status"><option value="asistio">Asistió</option><option value="falto">Falto</option><option value="tardanza">Tardanza</option><option value="permiso">Permiso</option></select>';
+                } else if (f === 'day_of_week') {
+                    inputHtml = '<select id="val-day_of_week">' +
+                        '<option value="Lunes">Lunes</option>' +
+                        '<option value="Martes">Martes</option>' +
+                        '<option value="Miércoles">Miércoles</option>' +
+                        '<option value="Jueves">Jueves</option>' +
+                        '<option value="Viernes">Viernes</option>' +
+                        '<option value="Sábado">Sábado</option>' +
+                        '<option value="Domingo">Domingo</option>' +
+                        '</select>';
+                } else if (f === 'employee_id') {
+                    inputHtml = '<select id="val-employee_id"><option value="">Cargando trabajadores...</option></select>';
+                    form.innerHTML += '<div class="field-group"><label>' + labelText + '</label>' + inputHtml + '</div>';
 
-            if (table !== 'erp_users') {
-                form.innerHTML += `<div class="field-group"><label>Orden Visual</label><input type="number" id="val-order_index"></div>`;
+                    const { data: emps } = await supabaseClient.from('employees').select('id, name').eq('active', true);
+                    const sel = document.getElementById('val-employee_id');
+                    if (sel) {
+                        sel.innerHTML = emps.map(e => '<option value="' + e.id + '">' + e.name + '</option>').join('');
+                        if (id) {
+                            const { data: currentItem } = await supabaseClient.from(table).select(f).eq('id', id).single();
+                            if (currentItem) sel.value = currentItem[f];
+                        }
+
+                        if (table === 'employee_payments') {
+                            sel.onchange = () => autoCalculatePayment(sel.value);
+                            if (!id && sel.value) autoCalculatePayment(sel.value);
+                        }
+                    }
+                    continue;
+                    continue;
+                } else if (f === 'date' || f === 'attendance_date' || f === 'payment_date' || f === 'period_start' || f === 'period_end') {
+                    inputHtml = '<input id="val-' + f + '" type="date">';
+                    if (!id) {
+                        const now = new Date();
+                        inputHtml = '<input id="val-' + f + '" type="date" value="' + now.toISOString().split('T')[0] + '">';
+                    }
+                } else if (f === 'clock_in' || f === 'clock_out') {
+                    inputHtml = '<input id="val-' + f + '" type="time">';
+                } else if (f === 'password') {
+                    inputHtml = '<div class="pass-wrapper">' +
+                        '<input id="val-' + f + '" type="password">' +
+                        '<i class="fas fa-eye toggle-pass" onclick="togglePasswordVisibility(\'val-' + f + '\', this)"></i>' +
+                        '</div>';
+                } else {
+                    inputHtml = '<input id="val-' + f + '" type="' + (f === 'base_salary' || f === 'amount' ? 'number' : 'text') + '" step="0.01">';
+                }
+                form.innerHTML += '<div class="field-group"><label>' + labelText + '</label>' + inputHtml + '</div>';
+            }
+
+            if (table !== 'erp_users' && !table.startsWith('employee')) {
+                form.innerHTML += '<div class="field-group"><label>Orden Visual</label><input type="number" id="val-order_index"></div>';
             }
 
             if (id) fillModal(table, id);
             document.getElementById('editor-modal').classList.remove('hidden');
-            document.getElementById('modal-save-btn').onclick = () => saveItem();
+
+            if (table === 'employee_bulk_schedule') {
+                document.getElementById('modal-title-main').innerText = "GENERAR HORARIO SEMANAL (BASE)";
+                document.getElementById('modal-save-btn').onclick = () => saveBulkSchedule();
+            } else {
+                document.getElementById('modal-save-btn').onclick = () => saveItem();
+            }
         }
 
         async function fillModal(table, id) {
@@ -1447,12 +1629,96 @@
 
         async function saveItem() {
             const payload = {};
-            document.querySelectorAll('[id^="val-"]').forEach(i => { payload[i.id.replace('val-', '')] = i.value; });
-            if (currentId) await supabaseClient.from(currentTable).update(payload).eq('id', currentId);
-            else await supabaseClient.from(currentTable).insert([payload]);
-            showToast("Cambios aplicados correctamente");
-            closeModal();
-            loadLists();
+            document.querySelectorAll('[id^="val-"]').forEach(i => {
+                const key = i.id.replace('val-', '');
+                let value = i.value;
+                if (key === 'base_salary' || key === 'amount') value = parseFloat(value) || 0;
+                if (key === 'active') value = (value === 'true');
+                payload[key] = value;
+            });
+
+            const btn = document.getElementById('modal-save-btn');
+            const originalText = btn.innerText;
+            btn.disabled = true;
+            btn.innerText = "Guardando...";
+
+            let result;
+            if (currentId) {
+                result = await supabaseClient.from(currentTable).update(payload).eq('id', currentId);
+            } else {
+                result = await supabaseClient.from(currentTable).insert([payload]);
+            }
+
+            btn.disabled = false;
+            btn.innerText = originalText;
+
+            if (result.error) {
+                console.error("Error saving item:", result.error);
+                alert("Error al guardar: " + result.error.message);
+            } else {
+                // If it's a payment, mark advances as discounted
+                if (currentTable === 'employee_payments' && !currentId) {
+                    const empId = payload.employee_id;
+                    await supabaseClient.from('employee_advances')
+                        .update({ status: 'descontado' })
+                        .eq('employee_id', empId)
+                        .eq('status', 'pendiente');
+                }
+
+                // If it's a bulk schedule, we don't use saveItem because it's multiple inserts
+                // Handled via custom logic below
+
+                showToast("Cambios aplicados correctamente");
+                closeModal();
+                loadLists();
+            }
+        }
+
+        async function saveBulkSchedule() {
+            const empId = document.getElementById('val-employee_id').value;
+            const clockIn = document.getElementById('val-clock_in').value;
+            const clockOut = document.getElementById('val-clock_out').value;
+
+            if (!empId || !clockIn || !clockOut) return alert("Completa todos los campos");
+
+            const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+            const batch = days.map(d => ({
+                employee_id: empId,
+                day_of_week: d,
+                clock_in: clockIn,
+                clock_out: clockOut
+            }));
+
+            const btn = document.getElementById('modal-save-btn');
+            btn.disabled = true;
+            btn.innerText = "Generando...";
+
+            const { error } = await supabaseClient.from('employee_schedules').insert(batch);
+
+            if (error) {
+                alert("Error: " + error.message);
+            } else {
+                showToast("Horario base generado (Lunes a Sábado)");
+                closeModal();
+                loadLists();
+            }
+        }
+
+        async function autoCalculatePayment(empId) {
+            if (currentTable !== 'employee_payments' || !empId) return;
+            const { data: emp } = await supabaseClient.from('employees').select('base_salary').eq('id', empId).single();
+            const { data: advances } = await supabaseClient.from('employee_advances')
+                .select('amount')
+                .eq('employee_id', empId)
+                .eq('status', 'pendiente');
+
+            const salary = emp ? emp.base_salary : 0;
+            const advancesTotal = advances ? (advances.reduce((sum, a) => sum + parseFloat(a.amount), 0)) : 0;
+            const net = salary - advancesTotal;
+
+            if (document.getElementById('val-salary_amount')) document.getElementById('val-salary_amount').value = salary;
+            if (document.getElementById('val-advances_total')) document.getElementById('val-advances_total').value = advancesTotal;
+            if (document.getElementById('val-net_amount')) document.getElementById('val-net_amount').value = net;
         }
 
         async function deleteItem(table, id) {
