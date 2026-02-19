@@ -1384,15 +1384,30 @@
             const erp = document.getElementById('nav-erp');
             const web = document.getElementById('nav-web');
             const admin = document.getElementById('nav-admin');
+            const hr = document.getElementById('nav-hr');
+            const sidebar = document.getElementById('sidebar');
+            const topHeader = document.querySelector('.top-header');
 
             // Reset visibility
             erp.classList.remove('hidden');
             web.classList.remove('hidden');
             admin.classList.remove('hidden');
+            hr.classList.remove('hidden');
+            sidebar.classList.remove('hidden');
+            if (topHeader) topHeader.classList.remove('hidden');
+
+            // Reset main-content styles
+            const mainContent = document.getElementById('main-content');
+            mainContent.style.marginLeft = "";
+            mainContent.style.width = "";
+
+            const mobileBtn = document.querySelector('.mobile-btn');
+            if (mobileBtn) mobileBtn.style.display = "";
 
             if (role === "Editor Web" || role === "editor") {
                 erp.classList.add('hidden');
                 admin.classList.add('hidden');
+                hr.classList.add('hidden');
                 switchSection('web-config');
             } else if (role === "Admin ERP" || role === "admin") {
                 admin.classList.add('hidden');
@@ -1401,6 +1416,14 @@
                 erp.classList.add('hidden');
                 web.classList.add('hidden');
                 admin.classList.add('hidden');
+                hr.classList.add('hidden');
+                sidebar.classList.add('hidden');
+                if (topHeader) topHeader.classList.add('hidden');
+                if (mobileBtn) mobileBtn.style.display = "none"; // Hide mobile menu button
+
+                mainContent.style.marginLeft = "0";
+                mainContent.style.width = "100%";
+
                 switchSection('employee-attendance');
             } else {
                 // Master Admin sees all
