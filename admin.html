@@ -654,6 +654,31 @@
         .toggle-pass:hover {
             color: var(--primary);
         }
+
+        .item-img-sm {
+            width: 55px;
+            height: 55px;
+            border-radius: 10px;
+            object-fit: cover;
+            border: 1px solid var(--glass-border);
+            background: #000;
+        }
+
+        .item-img-sm-placeholder {
+            width: 55px;
+            height: 55px;
+            border-radius: 10px;
+            background: var(--glass);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--glass-border);
+            color: var(--text-muted);
+        }
+
+        .item-img-sm-placeholder i {
+            opacity: 0.3;
+        }
     </style>
 </head>
 
@@ -823,6 +848,45 @@
             </div>
         </section>
 
+        <!-- SECCIÓN: PORTAL DEL TRABAJADOR -->
+        <section id="sec-employee-attendance" class="content-sec hidden">
+            <div class="card-editor" style="text-align: center; padding: 60px 20px;">
+                <i class="fas fa-user-clock"
+                    style="font-size: 4rem; color: var(--primary); margin-bottom: 20px; opacity: 0.8;"></i>
+                <h1 style="font-size: 1.5rem; margin-bottom: 5px;">Bienvenido, <span id="worker-name-display">...</span>
+                </h1>
+                <h2 style="font-size: 1.2rem; opacity: 0.7; margin-bottom: 30px;">Control de Asistencia</h2>
+                <p style="color: var(--text-muted); margin-bottom: 40px;">Registra tu ingreso o salida del día de hoy.
+                </p>
+
+                <div style="display: flex; flex-direction: column; gap: 20px; max-width: 400px; margin: 0 auto;">
+                    <button class="btn-action" onclick="markAttendance('asistio')"
+                        style="height: 60px; font-size: 1.1rem; background: linear-gradient(135deg, var(--accent-green), #065f46);">
+                        <i class="fas fa-check-circle"></i> MARCAR ASISTENCIA (OK)
+                    </button>
+                    <button class="btn-action secondary" onclick="markAttendance('tardanza')"
+                        style="height: 60px; font-size: 1.1rem; background: rgba(255, 159, 67, 0.1); color: #ff9f43; border-color: #ff9f43;">
+                        <i class="fas fa-clock"></i> REGISTRAR TARDANZA
+                    </button>
+                    <button class="btn-action secondary" onclick="openAbsenceDialog()"
+                        style="height: 60px; font-size: 1.1rem; background: rgba(255, 71, 87, 0.1); color: var(--accent-red); border-color: var(--accent-red);">
+                        <i class="fas fa-exclamation-triangle"></i> NOTIFICAR FALTA / PERMISO
+                    </button>
+
+                    <div style="margin-top: 30px; border-top: 1px solid var(--glass-border); padding-top: 20px;">
+                        <button class="btn-secondary" onclick="location.reload()"
+                            style="color: var(--accent-red); background: transparent; border: none; cursor: pointer;">
+                            <i class="fas fa-power-off"></i> Cerrar Sesión
+                        </button>
+                    </div>
+                </div>
+
+                <div id="attendance-status-msg"
+                    style="margin-top: 40px; padding: 20px; border-radius: 12px; background: rgba(255,255,255,0.03); display: none;">
+                </div>
+            </div>
+        </section>
+
         <!-- SECCIÓN: FINANCE ENTRY -->
         <section id="sec-finance" class="content-sec hidden">
             <div class="form-row">
@@ -986,6 +1050,11 @@
                     <div class="item-info"><b>Editor Web</b><span>Modificación de textos, imágenes y portafolio
                             solamente.</span></div>
                     <div style="color: var(--primary);">Nivel 30</div>
+                </div>
+                <div class="manager-item">
+                    <div class="item-info"><b>Trabajador</b><span>Portal simplificado para marcado de asistencia
+                            diaria.</span></div>
+                    <div style="color: var(--text-muted);">Nivel 10</div>
                 </div>
             </div>
             </div>
@@ -1154,6 +1223,7 @@
         const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
         let activeTab = 'dashboard';
         let activeUserName = "Sistema";
+        let activeEmployeeId = null; // ID of the linked worker if role is 'Trabajador'
 
         // --- 2. NOTIFICATIONS ---
         function showToast(msg, type = 'success') {
@@ -1212,7 +1282,15 @@
 
                 if (user) {
                     activeUserName = user.username;
-                    proceedToDashboard(user.role === 'admin' ? 'Admin ERP' : 'Editor Web');
+                    activeEmployeeId = user.employee_id;
+
+                    // Set personal greeting if worker
+                    if (user.role === 'employee' && user.employee_id) {
+                        const { data: empData } = await supabaseClient.from('employees').select('name').eq('id', user.employee_id).single();
+                        if (empData) document.getElementById('worker-name-display').innerText = empData.name;
+                    }
+
+                    proceedToDashboard(user.role);
                 }
             } catch (err) {
                 console.error("Error crítico:", err);
@@ -1283,13 +1361,20 @@
                 .subscribe();
         }
 
-        function proceedToDashboard(roleLabel) {
+        function proceedToDashboard(role) {
+            const roleLabels = {
+                'admin': 'Admin ERP',
+                'editor': 'Editor Web',
+                'employee': 'Trabajador'
+            };
+            const roleLabel = roleLabels[role] || role;
+
             document.getElementById('login-overlay').classList.add('hidden');
             document.getElementById('main-content').classList.remove('hidden');
             document.querySelector('.user-pill').innerText = roleLabel;
 
-            // Apply Permissions
-            applyPermissions(roleLabel);
+            // Apply Permissions (Role can be the label or the key)
+            applyPermissions(role);
 
             showToast(`Acceso Concedido: Sesión como ${roleLabel}`);
             initSystem();
@@ -1305,13 +1390,18 @@
             web.classList.remove('hidden');
             admin.classList.remove('hidden');
 
-            if (role === "Editor Web") {
+            if (role === "Editor Web" || role === "editor") {
                 erp.classList.add('hidden');
                 admin.classList.add('hidden');
-                switchSection('web-config'); // Default section for editors
-            } else if (role === "Admin ERP") {
+                switchSection('web-config');
+            } else if (role === "Admin ERP" || role === "admin") {
                 admin.classList.add('hidden');
                 switchSection('dashboard');
+            } else if (role === "Trabajador" || role === "employee") {
+                erp.classList.add('hidden');
+                web.classList.add('hidden');
+                admin.classList.add('hidden');
+                switchSection('employee-attendance');
             } else {
                 // Master Admin sees all
                 switchSection('dashboard');
@@ -1346,7 +1436,8 @@
                 'dashboard': 'nav-erp', 'finance': 'nav-erp',
                 'hr': 'nav-hr',
                 'web-config': 'nav-web', 'web-page': 'nav-web', 'web-portfolio': 'nav-web', 'web-social': 'nav-web',
-                'users': 'nav-admin'
+                'users': 'nav-admin',
+                'employee-attendance': 'none' // Virtual section for workers
             };
             const parentGroup = document.getElementById(navGroups[id]);
             if (parentGroup && parentGroup.classList.contains('hidden')) {
@@ -1372,7 +1463,8 @@
                 'web-portfolio': 'Galería de Imágenes',
                 'web-social': 'Testimonios & Social',
                 'hr': 'Recursos Humanos',
-                'users': 'Usuarios & Permisos'
+                'users': 'Usuarios & Permisos',
+                'employee-attendance': 'Portal del Trabajador'
             };
             const titleEl = document.getElementById('section-title');
             if (titleEl) titleEl.innerText = titles[id] || 'Panel de Control';
@@ -1416,6 +1508,53 @@
             } catch (e) {
                 console.error("Error loading HR stats:", e);
             }
+        }
+
+        // --- 5. WORKER PORTAL LOGIC ---
+        async function markAttendance(status, notes = "") {
+            if (!activeEmployeeId) return showToast("Error: No hay trabajador vinculado a esta cuenta", "error");
+
+            const today = new Date().toISOString().split('T')[0];
+
+            // Check if already marked
+            const { data: existing } = await supabaseClient
+                .from('employee_attendance')
+                .select('id')
+                .eq('employee_id', activeEmployeeId)
+                .eq('attendance_date', today)
+                .single();
+
+            if (existing) {
+                return showToast("Ya has registrado tu asistencia por el día de hoy", "warning");
+            }
+
+            const { error } = await supabaseClient.from('employee_attendance').insert([{
+                employee_id: activeEmployeeId,
+                attendance_date: today,
+                status: status,
+                notes: notes
+            }]);
+
+            if (error) {
+                showToast("Error al marcar asistencia: " + error.message, "error");
+            } else {
+                showToast("¡Asistencia registrada correctamente!", "success");
+                updateWorkerStatusUI(status, today);
+            }
+        }
+
+        function updateWorkerStatusUI(status, date) {
+            const msgBox = document.getElementById('attendance-status-msg');
+            msgBox.style.display = 'block';
+            msgBox.innerHTML = `
+                <h4 style="color: var(--accent-green); margin-bottom: 5px;"><i class="fas fa-check-circle"></i> ¡Listo!</h4>
+                <p style="font-size: 0.9rem;">Has marcado como <b>${status.toUpperCase()}</b> para el día <b>${date}</b>.</p>
+            `;
+        }
+
+        function openAbsenceDialog() {
+            const msg = prompt("Indique el motivo de su falta o permiso:");
+            if (msg) markAttendance('falto', msg);
         }
 
         function filterEmployees(query) {
@@ -1698,6 +1837,9 @@
 
             if (table === 'employees') {
                 orderBy = 'name';
+            } else if (table === 'erp_users') {
+                selectQuery = '*, employees(name)';
+                orderBy = 'username';
             } else if (table === 'employee_advances') {
                 selectQuery = '*, employees(name)';
                 orderBy = 'date';
@@ -1705,6 +1847,7 @@
             } else if (table === 'employee_schedules') {
                 selectQuery = '*, employees(name)';
                 orderBy = 'day_of_week';
+                ascending = false;
             } else if (table === 'employee_attendance') {
                 selectQuery = '*, employees(name)';
                 orderBy = 'attendance_date';
@@ -1789,18 +1932,13 @@
 
             return `
             <div class="manager-item">
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    ${imgSource ? `<img src="${imgSource}" style="width: 55px; height: 55px; border-radius: 10px; object-fit: cover; border: 1px solid var(--glass-border); background: #000;">` : `
-                        <div style="width: 55px; height: 55px; border-radius: 10px; background: var(--glass); display: flex; align-items: center; justify-content: center; border: 1px solid var(--glass-border);">
-                            <i class="fas fa-image" style="opacity: 0.3;"></i>
-                        </div>
-                    `}
-                    <div class="item-info">
-                        <b>${displayName}</b>
-                        ${extraInfo}
-                        <span>${item.description || item.category || item.role || item.answer || item.email || item.phone || (table === 'employees' ? 'Sueldo: S/ ' + item.base_salary : '') || (table === 'employee_payments' ? 'Semana: ' + item.period_start + ' al ' + item.period_end : '') || 'Sin detalles'}</span>
-                        ${table === 'employees' ? (item.active ? '<span class="status-badge active">Activo</span>' : '<span class="status-badge inactive">Cesado</span>') : ''}
-                    </div>
+                ${imgSource ? `<img src="${imgSource}" class="item-img-sm">` : '<div class="item-img-sm-placeholder"><i class="fas fa-user"></i></div>'}
+                <div class="item-info">
+                    <b>${displayName}</b>
+                    ${table === 'erp_users' && item.employees ? `<span style="color: var(--primary); font-size: 0.75rem;"><i class="fas fa-link"></i> Vinculado a: ${item.employees.name}</span>` : ''}
+                    ${extraInfo}
+                    <span>${item.description || item.category || item.role || item.answer || item.email || item.phone || (table === 'employees' ? 'Sueldo: S/ ' + item.base_salary : '') || (table === 'employee_payments' ? 'Semana: ' + item.period_start + ' al ' + item.period_end : '') || 'Sin detalles'}</span>
+                    ${table === 'employees' ? (item.active ? '<span class="status-badge active">Activo</span>' : '<span class="status-badge inactive">Cesado</span>') : ''}
                 </div>
                 <div class="actions">
                     <button class="btn-circle" onclick="openCrudModal('${table}', '${item.id}')" title="Modificar Datos">
@@ -1826,7 +1964,7 @@
                 'projects': ['title', 'category', 'image_url', 'link'],
                 'testimonials': ['name', 'role', 'company', 'content', 'avatar_url'],
                 'faq': ['question', 'answer'],
-                'erp_users': ['username', 'email', 'password', 'role'],
+                'erp_users': ['username', 'email', 'password', 'role', 'employee_id'],
                 'employees': ['name', 'role', 'base_salary', 'phone', 'email', 'active'],
                 'employee_advances': ['employee_id', 'amount', 'date', 'description', 'status'],
                 'employee_attendance': ['employee_id', 'attendance_date', 'status', 'notes'],
@@ -1867,7 +2005,7 @@
                 } else if (f === 'active') {
                     inputHtml = '<select id="val-active"><option value="true">Activo</option><option value="false">Inactivo</option></select>';
                 } else if (f === 'role' && table === 'erp_users') {
-                    inputHtml = '<select id="val-role"><option value="admin">Admin ERP</option><option value="editor">Editor Web</option></select>';
+                    inputHtml = '<select id="val-role"><option value="admin">Admin ERP</option><option value="editor">Editor Web</option><option value="employee">Trabajador</option></select>';
                 } else if (f === 'status' && table === 'employee_advances') {
                     inputHtml = '<select id="val-status"><option value="pendiente">Pendiente</option><option value="descontado">Descontado</option><option value="pagado">Pagado</option></select>';
                 } else if (f === 'status' && table === 'employee_attendance') {
@@ -1884,7 +2022,8 @@
                         '</select>';
                 } else if (f === 'employee_id') {
                     inputHtml = '<select id="val-employee_id"><option value="">Cargando trabajadores...</option></select>';
-                    form.innerHTML += '<div class="field-group"><label>' + labelText + '</label>' + inputHtml + '</div>';
+                    const fieldGroupId = `field-group-${f}`;
+                    form.innerHTML += `<div class="field-group" id="${fieldGroupId}"><label>` + labelText + '</label>' + inputHtml + '</div>';
 
                     const { data: emps } = await supabaseClient.from('employees').select('id, name').eq('active', true);
                     const sel = document.getElementById('val-employee_id');
@@ -1895,12 +2034,21 @@
                             if (currentItem) sel.value = currentItem[f];
                         }
 
+                        // Special logic for erp_users: only show employee_id if role is employee
+                        if (table === 'erp_users') {
+                            const roleSel = document.getElementById('val-role');
+                            const toggleEmpField = () => {
+                                document.getElementById(fieldGroupId).style.display = roleSel.value === 'employee' ? 'block' : 'none';
+                            };
+                            roleSel.onchange = toggleEmpField;
+                            toggleEmpField(); // Initial state
+                        }
+
                         if (table === 'employee_payments') {
                             sel.onchange = () => autoCalculatePayment(sel.value);
                             if (!id && sel.value) autoCalculatePayment(sel.value);
                         }
                     }
-                    continue;
                     continue;
                 } else if (f === 'date' || f === 'attendance_date' || f === 'payment_date' || f === 'period_start' || f === 'period_end') {
                     inputHtml = '<input id="val-' + f + '" type="date">';
@@ -1953,6 +2101,14 @@
             document.querySelectorAll('[id^="val-"]').forEach(i => {
                 const key = i.id.replace('val-', '');
                 let value = i.value;
+
+                // Skip if the field is inside a hidden group (e.g. employee_id for non-employees)
+                const group = i.closest('.field-group');
+                if (group && group.style.display === 'none') {
+                    payload[key] = null;
+                    return;
+                }
+
                 if (key === 'base_salary' || key === 'amount') value = parseFloat(value) || 0;
                 if (key === 'active') value = (value === 'true');
                 payload[key] = value;
