@@ -549,6 +549,43 @@
             color: var(--accent-red);
         }
 
+        /* --- HR Grouping Styles --- */
+        .hr-group {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            margin-bottom: 25px;
+            overflow: hidden;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .hr-group-header {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px 25px;
+            font-weight: 800;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .hr-group-items {
+            padding: 15px;
+        }
+
+        .hr-group-items .manager-item {
+            margin-bottom: 10px;
+            background: var(--bg-card);
+        }
+
+        .hr-group-items .manager-item:last-child {
+            margin-bottom: 0;
+        }
+
         /* --- Toast Notifications --- */
         #toast-container {
             position: fixed;
@@ -1678,42 +1715,88 @@
                 ascending = false;
             }
 
-            const { data } = await supabaseClient.from(table).select(selectQuery).order(orderBy, { ascending });
+            let query = supabaseClient.from(table).select(selectQuery);
+            if (orderBy !== 'custom') query = query.order(orderBy, { ascending });
+            const { data } = await query;
             const target = document.getElementById(containerId);
             if (!target) return;
 
-            target.innerHTML = data && data.length ? data.map(item => {
-                const imgSource = item.image_url || item.avatar_url;
-                const displayName = item.title || item.name || item.question || item.username || (item.employees ? item.employees.name : 'Desconocido');
-                return `
-                <div class="manager-item">
-                    <div style="display: flex; align-items: center; gap: 15px;">
-                        ${imgSource ? `<img src="${imgSource}" style="width: 55px; height: 55px; border-radius: 10px; object-fit: cover; border: 1px solid var(--glass-border); background: #000;">` : `
-                            <div style="width: 55px; height: 55px; border-radius: 10px; background: var(--glass); display: flex; align-items: center; justify-content: center; border: 1px solid var(--glass-border);">
-                                <i class="fas fa-image" style="opacity: 0.3;"></i>
+            if (!data || data.length === 0) {
+                target.innerHTML = '<p style="padding: 30px; text-align: center; color: var(--text-muted); width: 100%;">No hay elementos registrados en esta galería.</p>';
+                return;
+            }
+
+            // Custom sort for schedules (Days of week)
+            if (table === 'employee_schedules') {
+                const dayMap = { 'Lunes': 1, 'Martes': 2, 'Miércoles': 3, 'Jueves': 4, 'Viernes': 5, 'Sábado': 6, 'Domingo': 7 };
+                data.sort((a, b) => {
+                    const nameA = (a.employees ? a.employees.name : 'Z').toLowerCase();
+                    const nameB = (b.employees ? b.employees.name : 'Z').toLowerCase();
+                    if (nameA !== nameB) return nameA.localeCompare(nameB);
+                    return (dayMap[a.day_of_week] || 99) - (dayMap[b.day_of_week] || 99);
+                });
+            }
+
+            // Grouping logic for HR tables
+            const groupableTables = ['employee_advances', 'employee_schedules', 'employee_payments'];
+            if (groupableTables.includes(table)) {
+                // Group by employee name
+                const groups = {};
+                data.forEach(item => {
+                    const empName = item.employees ? item.employees.name : 'Sin Nombre';
+                    if (!groups[empName]) groups[empName] = [];
+                    groups[empName].push(item);
+                });
+
+                target.innerHTML = Object.keys(groups).sort().map(empName => {
+                    const itemsHtml = groups[empName].map(item => renderItemHtml(item, table)).join('');
+                    return `
+                        <div class="hr-group">
+                            <div class="hr-group-header">
+                                <i class="fas fa-user-circle"></i> ${empName}
                             </div>
-                        `}
-                        <div class="item-info">
-                            <b>${displayName}</b>
-                            ${table === 'employee_advances' ? `<span style="color: var(--accent-red); font-weight: bold;">- S/ ${item.amount}</span>` : ''}
-                            ${table === 'employee_attendance' ? `<span style="color: ${item.status === 'asistio' ? 'var(--accent-green)' : 'var(--accent-red)'}; font-weight: bold;">${item.status.toUpperCase()}</span>` : ''}
-                            ${table === 'employee_schedules' ? `<span style="color: var(--primary);">${item.day_of_week}: ${item.clock_in} - ${item.clock_out}</span>` : ''}
-                            ${table === 'employee_payments' ? `<span style="color: var(--accent-green); font-weight: bold;">S/ ${item.net_amount}</span>` : ''}
-                            <span>${item.description || item.category || item.role || item.answer || item.email || item.phone || (table === 'employees' ? 'Sueldo: S/ ' + item.base_salary : '') || (table === 'employee_payments' ? 'Semana: ' + item.period_start + ' al ' + item.period_end : '') || (table === 'employee_attendance' ? 'Fecha: ' + item.attendance_date : '') || 'Sin detalles'}</span>
-                            ${table === 'employees' ? (item.active ? '<span class="status-badge active">Activo</span>' : '<span class="status-badge inactive">Cesado</span>') : ''}
+                            <div class="hr-group-items">
+                                ${itemsHtml}
+                            </div>
                         </div>
-                    </div>
-                    <div class="actions">
-                        <button class="btn-circle" onclick="openCrudModal('${table}', '${item.id}')" title="Modificar Imagen / Datos">
-                            <i class="fas fa-pen"></i>
-                        </button>
-                        <button class="btn-circle del" onclick="deleteItem('${table}', '${item.id}')" title="Quitar de la Galería">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                    `;
+                }).join('');
+            } else {
+                target.innerHTML = data.map(item => renderItemHtml(item, table)).join('');
+            }
+        }
+
+        function renderItemHtml(item, table) {
+            const imgSource = item.image_url || item.avatar_url;
+            const displayName = item.title || item.name || item.question || item.username || (item.employees ? item.employees.name : 'Desconocido');
+            return `
+            <div class="manager-item">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    ${imgSource ? `<img src="${imgSource}" style="width: 55px; height: 55px; border-radius: 10px; object-fit: cover; border: 1px solid var(--glass-border); background: #000;">` : `
+                        <div style="width: 55px; height: 55px; border-radius: 10px; background: var(--glass); display: flex; align-items: center; justify-content: center; border: 1px solid var(--glass-border);">
+                            <i class="fas fa-image" style="opacity: 0.3;"></i>
+                        </div>
+                    `}
+                    <div class="item-info">
+                        <b>${displayName}</b>
+                        ${table === 'employee_advances' ? `<span style="color: var(--accent-red); font-weight: bold;">- S/ ${item.amount}</span>` : ''}
+                        ${table === 'employee_attendance' ? `<span style="color: ${item.status === 'asistio' ? 'var(--accent-green)' : 'var(--accent-red)'}; font-weight: bold;">${item.status.toUpperCase()}</span>` : ''}
+                        ${table === 'employee_schedules' ? `<span style="color: var(--primary); font-weight: 500;">${item.day_of_week}: ${item.clock_in} - ${item.clock_out}</span>` : ''}
+                        ${table === 'employee_payments' ? `<span style="color: var(--accent-green); font-weight: bold;">S/ ${item.net_amount}</span>` : ''}
+                        <span>${item.description || item.category || item.role || item.answer || item.email || item.phone || (table === 'employees' ? 'Sueldo: S/ ' + item.base_salary : '') || (table === 'employee_payments' ? 'Semana: ' + item.period_start + ' al ' + item.period_end : '') || (table === 'employee_attendance' ? 'Fecha: ' + item.attendance_date : '') || 'Sin detalles'}</span>
+                        ${table === 'employees' ? (item.active ? '<span class="status-badge active">Activo</span>' : '<span class="status-badge inactive">Cesado</span>') : ''}
                     </div>
                 </div>
-                `;
-            }).join('') : '<p style="padding: 30px; text-align: center; color: var(--text-muted); width: 100%;">No hay elementos registrados en esta galería.</p>';
+                <div class="actions">
+                    <button class="btn-circle" onclick="openCrudModal('${table}', '${item.id}')" title="Modificar Datos">
+                        <i class="fas fa-pen"></i>
+                    </button>
+                    <button class="btn-circle del" onclick="deleteItem('${table}', '${item.id}')" title="Eliminar">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+            `;
         }
 
         async function openCrudModal(table, id = null) {
