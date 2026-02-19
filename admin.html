@@ -441,6 +441,114 @@
             }
         }
 
+        /* --- HR Dashboard Enhancements --- */
+        .hr-dashboard-header {
+            background: linear-gradient(135deg, rgba(0, 168, 255, 0.1), transparent);
+            border-radius: var(--radius-lg);
+            padding: 30px;
+            margin-bottom: 40px;
+            border: 1px solid var(--glass-border);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .hr-summary-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .hr-summary-card i {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            color: var(--primary);
+        }
+
+        .hr-summary-data h4 {
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+
+        .hr-summary-data p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .hr-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--glass-border);
+            overflow-x: auto;
+        }
+
+        .hr-tab-btn {
+            padding: 12px 24px;
+            border-radius: 30px;
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: var(--transition);
+        }
+
+        .hr-tab-btn:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .hr-tab-btn.active {
+            color: var(--primary);
+            background: rgba(0, 168, 255, 0.1);
+            border-color: rgba(0, 168, 255, 0.3);
+        }
+
+        .hr-section-content {
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .status-badge.active {
+            background: rgba(50, 255, 126, 0.1);
+            color: var(--accent-green);
+        }
+
+        .status-badge.inactive {
+            background: rgba(255, 71, 87, 0.1);
+            color: var(--accent-red);
+        }
+
         /* --- Toast Notifications --- */
         #toast-container {
             position: fixed;
@@ -849,70 +957,136 @@
         <!-- SECCIÓN: RECURSOS HUMANOS -->
         <section id="sec-hr" class="content-sec hidden">
             <div class="section-header"
-                style="margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                style="margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end;">
                 <div>
-                    <h2>Gestión de Personal</h2>
-                    <p>Control de sueldos, adelantos y horarios de trabajadores</p>
+                    <h2 style="font-size: 2.2rem; margin-bottom: 5px;">Recursos Humanos</h2>
+                    <p style="color: var(--text-muted);">Centro de Control de Personal y Planilla</p>
                 </div>
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn-action" onclick="openCrudModal('employees')">
-                        <i class="fas fa-user-plus"></i> Nuevo Trabajador
-                    </button>
+                <button class="btn-action" onclick="openCrudModal('employees')">
+                    <i class="fas fa-user-plus"></i> Añadir Trabajador
+                </button>
+            </div>
+
+            <!-- Dashboard Stats Summary -->
+            <div class="hr-dashboard-header">
+                <div class="hr-summary-card">
+                    <i class="fas fa-users-viewfinder"></i>
+                    <div class="hr-summary-data">
+                        <h4 id="hr-stat-total">--</h4>
+                        <p>Total Personal</p>
+                    </div>
+                </div>
+                <div class="hr-summary-card">
+                    <i class="fas fa-user-check" style="color: var(--accent-green);"></i>
+                    <div class="hr-summary-data">
+                        <h4 id="hr-stat-attendance">--</h4>
+                        <p>Asistencia Hoy</p>
+                    </div>
+                </div>
+                <div class="hr-summary-card">
+                    <i class="fas fa-hand-holding-dollar" style="color: var(--accent-red);"></i>
+                    <div class="hr-summary-data">
+                        <h4 id="hr-stat-advances">--</h4>
+                        <p>Adelantos Pend.</p>
+                    </div>
+                </div>
+                <div class="hr-summary-card">
+                    <i class="fas fa-money-bill-transfer"></i>
+                    <div class="hr-summary-data">
+                        <h4 id="hr-stat-payroll">--</h4>
+                        <p>Pagos este mes</p>
+                    </div>
                 </div>
             </div>
 
-            <div class="form-row">
-                <div class="card-editor">
-                    <h3><i class="fas fa-users"></i> Trabajadores Activos</h3>
-                    <div id="employees-manager-list"></div>
-                </div>
+            <!-- Sub Navigation Tabs -->
+            <div class="hr-tabs">
+                <button class="hr-tab-btn active" onclick="switchHRTab('employees')"><i class="fas fa-id-card"></i>
+                    Personal</button>
+                <button class="hr-tab-btn" onclick="switchHRTab('attendance')"><i class="fas fa-calendar-check"></i>
+                    Asistencia</button>
+                <button class="hr-tab-btn" onclick="switchHRTab('advances')"><i class="fas fa-coins"></i>
+                    Adelantos</button>
+                <button class="hr-tab-btn" onclick="switchHRTab('payroll')"><i class="fas fa-file-invoice-dollar"></i>
+                    Planilla Semanal</button>
+                <button class="hr-tab-btn" onclick="switchHRTab('schedules')"><i class="fas fa-clock"></i>
+                    Horarios</button>
+            </div>
 
+            <!-- HR Tab Content: Personal -->
+            <div id="hr-tab-employees" class="hr-section-content">
                 <div class="card-editor">
-                    <h3><i class="fas fa-calendar-check"></i> Asistencia Diaria</h3>
-                    <div style="margin-bottom: 20px; display: flex; gap: 10px;">
-                        <button class="btn-action" style="width: 100%;" onclick="openCrudModal('employee_attendance')">
-                            <i class="fas fa-check"></i> Marcar Asistencia
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                        <h3>Lista de Trabajadores</h3>
+                        <div id="employees-search" style="max-width: 300px; width: 100%;">
+                            <input type="text" placeholder="Buscar trabajador..." onkeyup="filterEmployees(this.value)"
+                                style="padding: 10px 15px; font-size: 0.8rem;">
+                        </div>
+                    </div>
+                    <div id="employees-manager-list" class="manager-grid"></div>
+                </div>
+            </div>
+
+            <!-- HR Tab Content: Attendance -->
+            <div id="hr-tab-attendance" class="hr-section-content hidden">
+                <div class="card-editor">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                        <h3>Registro de Asistencia</h3>
+                        <button class="btn-action" onclick="openCrudModal('employee_attendance')">
+                            <i class="fas fa-check"></i> Marcar Día
                         </button>
                     </div>
                     <div id="attendance-manager-list"></div>
                 </div>
             </div>
 
-            <div class="card-editor">
-                <h3><i class="fas fa-hand-holding-dollar"></i> Adelantos & Pagos</h3>
-                <div style="margin-bottom: 20px; display: flex; gap: 10px;">
-                    <button class="btn-action secondary" style="width: 100%;"
-                        onclick="openCrudModal('employee_advances')">
-                        <i class="fas fa-plus"></i> Registrar Adelanto
-                    </button>
-                </div>
-                <div id="advances-manager-list"></div>
-            </div>
-            </div>
-
-            <div class="card-editor">
-                <div
-                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 10px;">
-                    <h3><i class="fas fa-calendar-days"></i> Horarios Semanales</h3>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="btn-action secondary" onclick="openCrudModal('employee_bulk_schedule')">
-                            <i class="fas fa-magic"></i> Generar Horario Base
-                        </button>
-                        <button class="btn-action secondary" onclick="openCrudModal('employee_schedules')">
-                            <i class="fas fa-plus"></i> Día Individual
+            <!-- HR Tab Content: Advances -->
+            <div id="hr-tab-advances" class="hr-section-content hidden">
+                <div class="card-editor">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                        <h3>Control de Adelantos</h3>
+                        <button class="btn-action secondary" onclick="openCrudModal('employee_advances')">
+                            <i class="fas fa-plus"></i> Registrar Adelanto
                         </button>
                     </div>
+                    <div id="advances-manager-list"></div>
                 </div>
-                <div id="schedules-manager-list"></div>
             </div>
 
-            <div class="card-editor">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-                    <h3><i class="fas fa-file-invoice-dollar"></i> Planilla Semanal (Pagos)</h3>
-                    <button class="btn-action" onclick="openCrudModal('employee_payments')">Generar Pago Semanal
-                        <i class="fas fa-plus"></i></button>
+            <!-- HR Tab Content: Payroll -->
+            <div id="hr-tab-payroll" class="hr-section-content hidden">
+                <div class="card-editor">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                        <h3>Planilla de Pagos Semanais</h3>
+                        <button class="btn-action" onclick="openCrudModal('employee_payments')">
+                            <i class="fas fa-file-invoice-dollar"></i> Generar Nuevo Pago
+                        </button>
+                    </div>
+                    <div id="payments-manager-list"></div>
                 </div>
-                <div id="payments-manager-list"></div>
+            </div>
+
+            <!-- HR Tab Content: Schedules -->
+            <div id="hr-tab-schedules" class="hr-section-content hidden">
+                <div class="card-editor">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px;">
+                        <h3>Gestión de Horarios</h3>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn-action secondary" onclick="openCrudModal('employee_bulk_schedule')">
+                                <i class="fas fa-magic"></i> Generar Masivo (L-S)
+                            </button>
+                            <button class="btn-action secondary" onclick="openCrudModal('employee_schedules')">
+                                <i class="fas fa-plus"></i> Nuevo Horario
+                            </button>
+                        </div>
+                    </div>
+                    <div id="schedules-manager-list"></div>
+                </div>
             </div>
         </section>
     </main>
@@ -1118,6 +1292,7 @@
             loadERP();
             loadWebConfig();
             loadLists();
+            loadHRStats();
             subscribeRealtime();
 
             if ("Notification" in window) {
@@ -1152,7 +1327,6 @@
                     item.classList.add('active');
                 }
             });
-
             const titles = {
                 'dashboard': 'Dashboard de Finanzas',
                 'finance': 'Registro de Operaciones',
@@ -1163,8 +1337,56 @@
                 'hr': 'Recursos Humanos',
                 'users': 'Usuarios & Permisos'
             };
-            document.getElementById('section-title').innerText = titles[id];
+            const titleEl = document.getElementById('section-title');
+            if (titleEl) titleEl.innerText = titles[id] || 'Panel de Control';
             if (window.innerWidth < 1024) toggleSidebar();
+        }
+
+        // --- 4. HR HELPERS ---
+        function switchHRTab(tabId) {
+            document.querySelectorAll('.hr-tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.hr-section-content').forEach(s => s.classList.add('hidden'));
+
+            const btn = document.querySelector(`.hr-tab-btn[onclick*="'${tabId}'"]`);
+            if (btn) btn.classList.add('active');
+
+            const content = document.getElementById(`hr-tab-${tabId}`);
+            if (content) content.classList.remove('hidden');
+        }
+
+        async function loadHRStats() {
+            try {
+                // 1. Total Employees
+                const { count: empCount } = await supabaseClient.from('employees').select('*', { count: 'exact', head: true }).eq('active', true);
+                document.getElementById('hr-stat-total').innerText = empCount || '0';
+
+                // 2. Attendance Today
+                const today = new Date().toISOString().split('T')[0];
+                const { count: attCount } = await supabaseClient.from('employee_attendance').select('*', { count: 'exact', head: true }).eq('attendance_date', today).eq('status', 'asistio');
+                document.getElementById('hr-stat-attendance').innerText = attCount || '0';
+
+                // 3. Pending Advances
+                const { data: advData } = await supabaseClient.from('employee_advances').select('amount').eq('status', 'pendiente');
+                const totalAdv = advData ? advData.reduce((sum, a) => sum + parseFloat(a.amount), 0) : 0;
+                document.getElementById('hr-stat-advances').innerText = `S/ ${totalAdv.toFixed(0)}`;
+
+                // 4. Monthly Payroll (estimated)
+                const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
+                const { data: payData } = await supabaseClient.from('employee_payments').select('net_amount').gte('payment_date', startOfMonth);
+                const totalPay = payData ? payData.reduce((sum, p) => sum + parseFloat(p.net_amount), 0) : 0;
+                document.getElementById('hr-stat-payroll').innerText = `S/ ${totalPay.toFixed(0)}`;
+
+            } catch (e) {
+                console.error("Error loading HR stats:", e);
+            }
+        }
+
+        function filterEmployees(query) {
+            const q = query.toLowerCase();
+            document.querySelectorAll('#employees-manager-list .manager-item').forEach(item => {
+                const name = item.querySelector('b').innerText.toLowerCase();
+                item.style.display = name.includes(q) ? 'flex' : 'none';
+            });
         }
 
         // --- 3. ERP LOGIC ---
@@ -1429,6 +1651,7 @@
             refreshList('employee_attendance', 'attendance-manager-list');
             refreshList('employee_schedules', 'schedules-manager-list');
             refreshList('employee_payments', 'payments-manager-list');
+            loadHRStats();
         }
 
         async function refreshList(table, containerId) {
@@ -1477,7 +1700,7 @@
                             ${table === 'employee_schedules' ? `<span style="color: var(--primary);">${item.day_of_week}: ${item.clock_in} - ${item.clock_out}</span>` : ''}
                             ${table === 'employee_payments' ? `<span style="color: var(--accent-green); font-weight: bold;">S/ ${item.net_amount}</span>` : ''}
                             <span>${item.description || item.category || item.role || item.answer || item.email || item.phone || (table === 'employees' ? 'Sueldo: S/ ' + item.base_salary : '') || (table === 'employee_payments' ? 'Semana: ' + item.period_start + ' al ' + item.period_end : '') || (table === 'employee_attendance' ? 'Fecha: ' + item.attendance_date : '') || 'Sin detalles'}</span>
-                            ${table === 'employees' && item.active === false ? '<span style="color: var(--accent-red); font-size: 0.8em; margin-left: 10px;">(Cesado)</span>' : ''}
+                            ${table === 'employees' ? (item.active ? '<span class="status-badge active">Activo</span>' : '<span class="status-badge inactive">Cesado</span>') : ''}
                         </div>
                     </div>
                     <div class="actions">
