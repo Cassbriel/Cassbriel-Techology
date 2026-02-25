@@ -69,9 +69,22 @@
             background: var(--bg-dark);
             color: var(--text-main);
             display: flex;
-            height: 100vh;
-            overflow: hidden;
+            min-height: 100vh;
+            overflow-x: hidden;
             font-size: 0.95rem;
+        }
+
+        @media (max-width: 1024px) {
+            body {
+                flex-direction: column;
+                height: auto;
+                overflow-y: auto;
+            }
+
+            main {
+                height: auto !important;
+                overflow-y: visible !important;
+            }
         }
 
         /* --- CALENDAR & CRM STYLES --- */
@@ -612,6 +625,16 @@
             margin-bottom: 28px;
         }
 
+        @media (max-width: 600px) {
+            .stats-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            #category-stats-grid {
+                grid-template-columns: 1fr !important;
+            }
+        }
+
         .stat-card {
             background: var(--bg-card);
             border: 1px solid var(--glass-border);
@@ -913,20 +936,38 @@
         @media (max-width: 1024px) {
             aside {
                 transform: translateX(-100%);
-                position: absolute;
+                position: fixed;
+                top: 0;
+                left: 0;
                 height: 100vh;
+                z-index: 6000;
             }
 
             aside.active {
                 transform: translateX(0);
             }
 
+            aside.active .sidebar-close-btn {
+                display: block !important;
+            }
+
             main {
-                padding: 20px;
+                padding: 15px;
+                margin-left: 0 !important;
+                width: 100%;
+                overflow-x: hidden;
             }
 
             .mobile-btn {
                 display: flex;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            .top-header {
+                padding: 15px 10px;
             }
         }
 
@@ -1201,7 +1242,23 @@
 
     <!-- MASTER SIDEBAR -->
     <aside id="sidebar">
-        <div class="logo-area">CASSBRIEL <span>TECH</span></div>
+        <div class="logo-area" style="position: relative;">
+            CASSBRIEL <span>TECH</span>
+            <button onclick="toggleSidebar()" class="sidebar-close-btn" style="
+                display: none;
+                position: absolute;
+                right: 0;
+                top: 50%;
+                transform: translateY(-50%);
+                background: none;
+                border: none;
+                color: var(--text-muted);
+                font-size: 1.2rem;
+                cursor: pointer;
+            ">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
 
         <div class="nav-group" id="nav-erp">
             <p class="nav-label">Finanzas ERP</p>
@@ -2208,10 +2265,16 @@
 
             // Highlight nav item
             document.querySelectorAll('.nav-item').forEach(item => {
-                if (item.getAttribute('onclick') && item.getAttribute('onclick').includes(`'${id}'`)) {
+                const clickAttr = item.getAttribute('onclick');
+                if (clickAttr && clickAttr.includes(`'${id}'`)) {
                     item.classList.add('active');
                 }
             });
+
+            // Close sidebar on mobile
+            if (window.innerWidth <= 1024) {
+                document.getElementById('sidebar').classList.remove('active');
+            }
             const titles = {
                 'dashboard': 'Dashboard de Finanzas',
                 'finance': 'Registro de Operaciones',
@@ -3457,46 +3520,46 @@
                 </div>
 
                 <!-- Summary Pills -->
-                <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px;">
+                <div class="summary-pills" style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px;">
                     <div
-                        style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:14px; text-align:center;">
+                        style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:12px; text-align:center;">
                         <div
-                            style="font-size:0.65rem; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); margin-bottom:6px;">
+                            style="font-size:0.6rem; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); margin-bottom:4px;">
                             Días</div>
                         <div id="hist-days-count"
-                            style="font-family:'Orbitron',sans-serif; font-size:1.2rem; font-weight:800;">—</div>
+                            style="font-family:'Orbitron',sans-serif; font-size:1.1rem; font-weight:800;">—</div>
                     </div>
                     <div
-                        style="background:rgba(39,174,96,0.06); border:1px solid rgba(39,174,96,0.15); border-radius:14px; padding:14px; text-align:center;">
+                        style="background:rgba(39,174,96,0.06); border:1px solid rgba(39,174,96,0.15); border-radius:14px; padding:12px; text-align:center;">
                         <div
-                            style="font-size:0.65rem; text-transform:uppercase; letter-spacing:1px; color:var(--neon-green); margin-bottom:6px;">
+                            style="font-size:0.6rem; text-transform:uppercase; letter-spacing:1px; color:var(--neon-green); margin-bottom:4px;">
                             Total Ingresado</div>
                         <div id="hist-total-inc"
-                            style="font-family:'Orbitron',sans-serif; font-size:1rem; font-weight:800; color:var(--neon-green);">
+                            style="font-family:'Orbitron',sans-serif; font-size:0.9rem; font-weight:800; color:var(--neon-green);">
                             —</div>
                     </div>
                     <div
-                        style="background:rgba(231,76,60,0.06); border:1px solid rgba(231,76,60,0.15); border-radius:14px; padding:14px; text-align:center;">
+                        style="background:rgba(231,76,60,0.06); border:1px solid rgba(231,76,60,0.15); border-radius:14px; padding:12px; text-align:center;">
                         <div
-                            style="font-size:0.65rem; text-transform:uppercase; letter-spacing:1px; color:var(--neon-red); margin-bottom:6px;">
+                            style="font-size:0.6rem; text-transform:uppercase; letter-spacing:1px; color:var(--neon-red); margin-bottom:4px;">
                             Total Egresado</div>
                         <div id="hist-total-exp"
-                            style="font-family:'Orbitron',sans-serif; font-size:1rem; font-weight:800; color:var(--neon-red);">
+                            style="font-family:'Orbitron',sans-serif; font-size:0.9rem; font-weight:800; color:var(--neon-red);">
                             —</div>
                     </div>
                     <div
-                        style="background:rgba(79,156,249,0.06); border:1px solid rgba(79,156,249,0.15); border-radius:14px; padding:14px; text-align:center;">
+                        style="background:rgba(79,156,249,0.06); border:1px solid rgba(79,156,249,0.15); border-radius:14px; padding:12px; text-align:center;">
                         <div
-                            style="font-size:0.65rem; text-transform:uppercase; letter-spacing:1px; color:var(--neon-blue); margin-bottom:6px;">
+                            style="font-size:0.6rem; text-transform:uppercase; letter-spacing:1px; color:var(--neon-blue); margin-bottom:4px;">
                             Balance Global</div>
                         <div id="hist-total-bal"
-                            style="font-family:'Orbitron',sans-serif; font-size:1rem; font-weight:800;">—</div>
+                            style="font-family:'Orbitron',sans-serif; font-size:0.9rem; font-weight:800;">—</div>
                     </div>
                 </div>
             </div>
 
             <!-- Column Labels -->
-            <div
+            <div class="column-labels"
                 style="display:grid; grid-template-columns:1fr 200px 160px 48px; gap:0; padding:10px 32px; background:rgba(255,255,255,0.02); border-bottom:1px solid rgba(255,255,255,0.05);">
                 <span
                     style="font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted);">Fecha</span>
@@ -3548,6 +3611,40 @@
             background: rgba(255, 255, 255, 0.04);
             border-color: rgba(255, 255, 255, 0.1);
             transform: translateX(4px);
+        }
+
+        /* --- Mobile Overrides for History Modal --- */
+        @media (max-width: 768px) {
+            #modal-history .summary-pills {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+
+            #modal-history .column-labels {
+                display: none !important;
+            }
+
+            .hist-row {
+                grid-template-columns: 1fr 1fr !important;
+                padding: 15px !important;
+                gap: 10px !important;
+            }
+
+            .hist-row>div:nth-child(2) {
+                text-align: right;
+            }
+
+            .hist-row>div:nth-child(3),
+            .hist-row>div:nth-child(4) {
+                grid-column: span 2;
+                border-top: 1px solid rgba(255, 255, 255, 0.05);
+                padding-top: 10px;
+            }
+
+            .ag-modal-content,
+            .modal-body {
+                padding: 20px !important;
+                border-radius: 20px !important;
+            }
         }
 
         @keyframes rowFadeIn {
