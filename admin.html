@@ -6,27 +6,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cassbriel | Master Command Center</title>
     <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Syncopate:wght@400;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Syncopate:wght@400;700&family=Orbitron:wght@400;700&family=Plus+Jakarta+Sans:wght@300;500;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --primary: #00a8ff;
-            --primary-glow: rgba(0, 168, 255, 0.4);
-            --accent-green: #32ff7e;
-            --accent-red: #ff4757;
-            --bg-dark: #06090f;
-            --bg-surface: #10141b;
-            --bg-card: #161b22;
-            --glass: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --text-main: #f0f6fc;
-            --text-muted: #8b949e;
-            --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            --radius-lg: 24px;
-            --radius-md: 16px;
-            --sidebar-width: 280px;
+            /* Core palette - warm dark, not pure black */
+            --primary: #4f9cf9;
+            --primary-glow: rgba(79, 156, 249, 0.25);
+            --accent-green: #27ae60;
+            --accent-red: #e74c3c;
+            --bg-dark: #0d1117;
+            --bg-surface: #161b24;
+            --bg-card: #1c2333;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.07);
+            --text-main: #e8edf4;
+            --text-muted: #7d8590;
+            --transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --radius-lg: 20px;
+            --radius-md: 14px;
+            --sidebar-width: 270px;
+            --border: rgba(255, 255, 255, 0.07);
+
+            /* Semantic accent tokens */
+            --neon-green: #27ae60;
+            --neon-red: #e74c3c;
+            --neon-blue: #4f9cf9;
+            --neon-purple: #8b5cf6;
+            --neon-orange: #f59e0b;
+            --card-glass: rgba(255, 255, 255, 0.04);
+            --transition-bounce: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         * {
@@ -35,13 +46,406 @@
             box-sizing: border-box;
         }
 
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
         body {
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Plus Jakarta Sans', 'Outfit', sans-serif;
             background: var(--bg-dark);
             color: var(--text-main);
             display: flex;
             height: 100vh;
             overflow: hidden;
+            font-size: 0.95rem;
+        }
+
+        /* --- CALENDAR & CRM STYLES --- */
+        .ag-calendar-container {
+            display: grid;
+            grid-template-columns: 1.8fr 1.2fr;
+            gap: 25px;
+        }
+
+        .ag-calendar {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 30px;
+            border-radius: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(25px);
+        }
+
+        .cal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+
+        .cal-day-name {
+            text-align: center;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.5;
+            padding-bottom: 10px;
+            font-weight: 800;
+        }
+
+        .cal-day {
+            aspect-ratio: 1/1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid transparent;
+            font-size: 0.9rem;
+            position: relative;
+        }
+
+        .cal-day:hover:not(.empty) {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+
+        .cal-day.active {
+            background: var(--neon-blue);
+            color: #000;
+            font-weight: 800;
+            border-color: var(--neon-blue);
+        }
+
+        .cal-day.today {
+            border-color: var(--neon-blue);
+            color: var(--neon-blue);
+        }
+
+        .cal-day.has-event::after {
+            content: '';
+            position: absolute;
+            bottom: 6px;
+            width: 5px;
+            height: 5px;
+            background: var(--neon-purple);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--neon-purple);
+        }
+
+        .crm-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .crm-item {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: var(--transition-bounce);
+            position: relative;
+        }
+
+        .crm-item:hover {
+            transform: translateY(-3px);
+            border-color: var(--neon-purple);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .crm-item b {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 1rem;
+            color: #fff;
+        }
+
+        .crm-item span {
+            font-size: 0.8rem;
+            opacity: 0.6;
+            display: block;
+        }
+
+        .crm-item .time-tag {
+            font-size: 0.7rem;
+            background: rgba(52, 152, 219, 0.1);
+            color: var(--neon-blue);
+            padding: 4px 12px;
+            border-radius: 50px;
+            margin-top: 10px;
+            display: inline-block;
+            font-weight: 700;
+        }
+
+        .crm-item .status-dot {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        /* SOFTENED UTILS */
+        .ag-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 30px;
+            padding: 26px;
+            transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+            position: relative;
+        }
+
+        .ag-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .ag-input,
+        .ag-select {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+        }
+
+        .ag-input:focus {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--neon-blue);
+        }
+
+        .ag-btn-save {
+            background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+            color: #fff;
+            font-weight: 700;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        /* --- UTILS --- */
+        .orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .jakarta {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        @keyframes float-mini {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .ag-card {
+            background: var(--card-glass);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 22px;
+            animation: float-mini 5s ease-in-out infinite;
+            transition: var(--transition-bounce);
+            position: relative;
+        }
+
+        .ag-card:hover {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.1);
+        }
+
+        .ag-card h3,
+        .ag-card h4 {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            opacity: 0.7;
+            margin-bottom: 8px;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .ag-card .amount {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .ag-card.green {
+            border-bottom: 3px solid var(--neon-green);
+        }
+
+        .ag-card.red {
+            border-bottom: 3px solid var(--neon-red);
+        }
+
+        .ag-card.blue {
+            border-bottom: 3px solid var(--neon-blue);
+        }
+
+        .ag-card.purple {
+            border-bottom: 3px solid var(--neon-purple);
+        }
+
+        /* FAB & Modal 2.0 */
+        .ag-fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+            border-radius: 18px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 25px rgba(0, 217, 255, 0.3);
+            cursor: pointer;
+            z-index: 2005;
+            transition: var(--transition-bounce);
+            border: none;
+            color: black;
+            font-size: 1.5rem;
+        }
+
+        .ag-fab:hover {
+            transform: scale(1.1) rotate(90deg);
+        }
+
+        .ag-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(12px);
+            z-index: 3000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .ag-modal-content {
+            background: #0f111a;
+            width: 100%;
+            max-width: 450px;
+            padding: 35px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            box-shadow: 0 0 50px rgba(0, 217, 255, 0.1);
+        }
+
+        .ag-input,
+        .ag-select {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 14px 18px;
+            border-radius: 14px;
+            color: white;
+            margin-bottom: 12px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .ag-input:focus {
+            border-color: var(--neon-blue);
+            background: rgba(0, 217, 255, 0.05);
+        }
+
+        .ag-btn-save {
+            width: 100%;
+            padding: 16px;
+            background: var(--neon-blue);
+            border: none;
+            border-radius: 14px;
+            font-weight: 800;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            cursor: pointer;
+            color: #000;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 10px;
+        }
+
+        .ag-transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            margin-bottom: 12px;
+            transition: var(--transition);
+        }
+
+        .ag-transaction-item:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .ag-tag {
+            font-size: 0.6rem;
+            padding: 4px 10px;
+            border-radius: 50px;
+            text-transform: uppercase;
+            font-weight: 800;
+            font-family: 'Plus Jakarta Sans';
+        }
+
+        .ag-tag.inc {
+            background: rgba(0, 255, 136, 0.1);
+            color: var(--neon-green);
+        }
+
+        .ag-tag.exp {
+            background: rgba(255, 62, 62, 0.1);
+            color: var(--neon-red);
+        }
+
+        .scroll-x {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            padding-bottom: 15px;
+            gap: 15px;
+        }
+
+        .scroll-x::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .scroll-x::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
         }
 
         .hidden {
@@ -78,67 +482,98 @@
             border-right: 1px solid var(--glass-border);
             display: flex;
             flex-direction: column;
-            padding: 40px 20px;
+            padding: 28px 16px;
             z-index: 1000;
             transition: var(--transition);
+            overflow-y: auto;
         }
 
         .logo-area {
-            font-family: 'Syncopate', sans-serif;
-            font-size: 1.2rem;
-            margin-bottom: 50px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 800;
+            margin-bottom: 36px;
             color: white;
             display: flex;
             align-items: center;
             gap: 10px;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            letter-spacing: 1px;
         }
 
         .logo-area span {
-            color: var(--primary);
-            text-shadow: 0 0 15px var(--primary-glow);
+            color: var(--neon-blue);
         }
 
         .nav-group {
-            margin-bottom: 30px;
+            margin-bottom: 24px;
         }
 
         .nav-label {
-            font-size: 0.7rem;
-            font-weight: 800;
+            font-size: 0.65rem;
+            font-weight: 700;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 2px;
-            margin-bottom: 15px;
-            padding-left: 15px;
+            margin-bottom: 8px;
+            padding-left: 12px;
+            opacity: 0.6;
         }
 
         .nav-item {
             display: flex;
             align-items: center;
-            gap: 15px;
-            padding: 14px 20px;
-            border-radius: var(--radius-md);
+            gap: 12px;
+            padding: 11px 14px;
+            border-radius: 12px;
             cursor: pointer;
             color: var(--text-muted);
-            margin-bottom: 5px;
+            margin-bottom: 3px;
+            transition: var(--transition);
+            font-size: 0.88rem;
+            font-weight: 500;
+        }
+
+        .nav-item i {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.04);
+            font-size: 0.8rem;
+            flex-shrink: 0;
             transition: var(--transition);
         }
 
         .nav-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-main);
+        }
+
+        .nav-item:hover i {
+            background: rgba(255, 255, 255, 0.08);
         }
 
         .nav-item.active {
-            background: linear-gradient(90deg, rgba(0, 168, 255, 0.15), transparent);
-            color: var(--primary);
-            border-left: 3px solid var(--primary);
+            background: rgba(79, 156, 249, 0.12);
+            color: var(--neon-blue);
+            font-weight: 700;
+        }
+
+        .nav-item.active i {
+            background: rgba(79, 156, 249, 0.2);
+            color: var(--neon-blue);
         }
 
         /* --- Main Content --- */
         main {
             flex: 1;
-            padding: 40px;
+            padding: 32px 36px;
             overflow-y: auto;
             background: var(--bg-dark);
         }
@@ -147,50 +582,74 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 40px;
+            margin-bottom: 32px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--glass-border);
         }
 
         .tab-title h1 {
-            font-size: 2rem;
-            font-weight: 800;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.3px;
+        }
+
+        .user-pill {
+            background: var(--glass) !important;
+            padding: 8px 18px !important;
+            border-radius: 50px !important;
+            font-weight: 600 !important;
+            font-size: 0.8rem !important;
+            border: 1px solid var(--glass-border) !important;
+            color: var(--text-muted) !important;
         }
 
         /* --- Cards & Grid --- */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 18px;
+            margin-bottom: 28px;
         }
 
         .stat-card {
             background: var(--bg-card);
             border: 1px solid var(--glass-border);
-            padding: 30px;
+            padding: 24px;
             border-radius: var(--radius-lg);
             position: relative;
             overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            border-color: rgba(255, 255, 255, 0.13);
+            transform: translateY(-2px);
         }
 
         .stat-card i {
             position: absolute;
-            right: -20px;
-            bottom: -20px;
-            font-size: 8rem;
-            opacity: 0.05;
+            right: -15px;
+            bottom: -15px;
+            font-size: 6rem;
+            opacity: 0.04;
             transform: rotate(-15deg);
         }
 
         .stat-card.green {
-            border-bottom: 4px solid var(--accent-green);
+            border-top: 3px solid var(--neon-green);
         }
 
         .stat-card.red {
-            border-bottom: 4px solid var(--accent-red);
+            border-top: 3px solid var(--neon-red);
         }
 
         .stat-card.blue {
-            border-bottom: 4px solid var(--primary);
+            border-top: 3px solid var(--neon-blue);
+        }
+
+        .stat-card.purple {
+            border-top: 3px solid var(--neon-purple);
         }
 
         .form-row {
@@ -210,17 +669,28 @@
             background: var(--bg-card);
             border: 1px solid var(--glass-border);
             border-radius: var(--radius-lg);
-            padding: 35px;
-            margin-bottom: 30px;
+            padding: 28px;
+            margin-bottom: 22px;
+            transition: border-color 0.3s ease;
+        }
+
+        .card-editor:hover {
+            border-color: rgba(255, 255, 255, 0.11);
         }
 
         .card-editor h3 {
-            margin-bottom: 25px;
+            margin-bottom: 22px;
             display: flex;
             align-items: center;
             gap: 10px;
-            font-family: 'Syncopate', sans-serif;
-            font-size: 0.9rem;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .card-editor h3 i {
+            color: var(--neon-blue);
         }
 
         /* --- Input Styles --- */
@@ -243,129 +713,148 @@
         select,
         textarea {
             width: 100%;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.09);
             border-radius: 12px;
-            padding: 14px 18px;
-            color: white;
+            padding: 13px 16px;
+            color: var(--text-main);
             transition: var(--transition);
             font-family: inherit;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
 
         input:focus,
-        textarea:focus {
+        textarea:focus,
+        select:focus {
             outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 20px rgba(0, 168, 255, 0.2);
-            background: rgba(0, 168, 255, 0.05);
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 0 3px rgba(79, 156, 249, 0.12);
+            background: rgba(79, 156, 249, 0.04);
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: rgba(255, 255, 255, 0.25);
         }
 
         .btn-action {
-            background: linear-gradient(135deg, var(--primary), #0056b3);
-            font-weight: 800;
+            background: var(--neon-blue);
+            font-weight: 700;
             color: white;
-            padding: 16px 30px;
+            padding: 11px 22px;
             border: none;
-            border-radius: 50px;
+            border-radius: 12px;
             cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            font-size: 0.85rem;
+            letter-spacing: 0.3px;
             transition: var(--transition);
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-            box-shadow: 0 10px 30px rgba(0, 168, 255, 0.3);
+            gap: 8px;
+            box-shadow: 0 4px 16px rgba(79, 156, 249, 0.25);
             width: auto;
             align-self: flex-start;
         }
 
         .btn-action:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 20px 40px rgba(0, 168, 255, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(79, 156, 249, 0.4);
+            filter: brightness(1.1);
         }
 
         .btn-action.secondary {
-            background: var(--glass);
-            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: none;
+            color: var(--text-main);
+        }
+
+        .btn-action.secondary:hover {
+            background: rgba(255, 255, 255, 0.09);
         }
 
         /* --- List Manager --- */
         .manager-item {
-            background: var(--bg-surface);
-            padding: 18px 24px;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 16px 20px;
             border-radius: var(--radius-md);
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border: 1px solid transparent;
+            border: 1px solid var(--glass-border);
             transition: var(--transition);
         }
 
         .manager-item:hover {
-            border-color: var(--glass-border);
-            background: var(--bg-card);
+            border-color: rgba(255, 255, 255, 0.14);
+            background: rgba(255, 255, 255, 0.04);
+            transform: translateX(3px);
         }
 
         .item-info b {
-            font-size: 1.1rem;
+            font-size: 0.95rem;
+            font-weight: 700;
         }
 
         .item-info span {
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             color: var(--text-muted);
             display: block;
+            margin-top: 2px;
         }
 
         .actions {
             display: flex;
-            gap: 10px;
+            gap: 8px;
         }
 
         .btn-circle {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
             border: 1px solid var(--glass-border);
-            background: transparent;
-            color: white;
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-muted);
             cursor: pointer;
-            transition: 0.2s;
+            transition: var(--transition);
+            font-size: 0.8rem;
         }
 
         .btn-circle:hover {
-            color: var(--primary);
-            border-color: var(--primary);
+            color: var(--neon-blue);
+            border-color: var(--neon-blue);
+            background: rgba(79, 156, 249, 0.1);
         }
 
         .btn-circle.del:hover {
-            color: var(--accent-red);
-            border-color: var(--accent-red);
+            color: var(--neon-red);
+            border-color: var(--neon-red);
+            background: rgba(231, 76, 60, 0.1);
         }
 
         /* --- Modals --- */
         #editor-modal {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.75);
             z-index: 2000;
             display: flex;
             align-items: center;
             justify-content: center;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(16px);
         }
 
         .modal-body {
             background: var(--bg-card);
             width: 100%;
-            max-width: 600px;
-            border-radius: var(--radius-lg);
-            padding: 50px;
-            border: 1px solid var(--glass-border);
+            max-width: 560px;
+            border-radius: 24px;
+            padding: 36px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             max-height: 90vh;
             overflow-y: auto;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
         }
 
         /* --- Custom File Upload --- */
@@ -732,6 +1221,12 @@
             </div>
         </div>
 
+        <div class="nav-group" id="nav-crm">
+            <p class="nav-label">CRM & Agenda</p>
+            <div class="nav-item" onclick="switchSection('calendar')"><i class="fas fa-calendar-alt"></i> Agenda &
+                Llamadas</div>
+        </div>
+
         <div class="nav-group" id="nav-hr">
             <p class="nav-label">Gestión de Personal</p>
             <div class="nav-item" onclick="switchSection('hr')"><i class="fas fa-users-gear"></i> Recursos Humanos</div>
@@ -766,84 +1261,102 @@
         </div>
 
         <!-- SECCIÓN: DASHBOARD FINANZAS -->
-        <section id="sec-dashboard" class="content-sec">
-            <div class="section-header" style="flex-wrap: wrap; gap: 15px;">
+        <section id="sec-dashboard" class="content-sec hidden">
+            <div class="section-header" style="flex-wrap: wrap; gap: 15px; margin-bottom: 30px;">
                 <div>
-                    <h2>Dashboard de Finanzas</h2>
-                    <p>Control de ingresos, egresos y liquidez de Cassbriel Technology</p>
+                    <h2 class="orbitron" style="font-size: 1.5rem; letter-spacing: 2px; color: var(--neon-blue);">NÚCLEO
+                        FINANCIERO</h2>
+                    <p class="jakarta" style="opacity: 0.6; font-size: 0.9rem;">Monitor biométrico de ingresos, egresos
+                        y liquidez estructural</p>
                 </div>
-                <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 15px;">
                     <button class="btn-action" onclick="showDailyHistory()"
-                        style="background: var(--surface); color: var(--text); border: 1px solid var(--border);">
-                        <i class="fas fa-list-check"></i> Historial de Cuadres
+                        style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: white;">
+                        <i class="fas fa-layer-group"></i> Bitácora de Cuadres
                     </button>
                     <div
-                        style="display: flex; align-items: center; gap: 10px; background: var(--surface); padding: 8px 15px; border-radius: 12px; border: 1px solid var(--border);">
-                        <span style="font-size: 0.85rem; color: var(--text-muted);">Ver día:</span>
+                        style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 8px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                        <i class="far fa-calendar-alt" style="color: var(--neon-blue);"></i>
                         <input type="date" id="dash-filter-date" onchange="loadERP()"
-                            style="background: transparent; border: none; color: var(--primary); font-weight: 700; outline: none; cursor: pointer;">
+                            style="background: transparent; border: none; color: white; font-weight: 700; outline: none; cursor: pointer; font-family: 'Plus Jakarta Sans';">
                     </div>
                 </div>
             </div>
-            <div class="stats-grid">
-                <div class="stat-card green">
-                    <i class="fas fa-arrow-trend-up"></i>
-                    <h4>Total Ingresos Hoy</h4>
-                    <div class="amount" id="dash-income">S/ 0.00</div>
-                    <p style="font-size: 0.8rem; color: var(--accent-green); margin-top: 10px;">+ Registro en Tiempo
-                        Real</p>
-                </div>
-                <div class="stat-card red">
-                    <i class="fas fa-arrow-trend-down"></i>
-                    <h4>Total Salidas Hoy</h4>
-                    <div class="amount" id="dash-expense">S/ 0.00</div>
-                    <p style="font-size: 0.8rem; color: var(--accent-red); margin-top: 10px;">- Control de Gastos</p>
-                </div>
-                <div class="stat-card blue">
-                    <i class="fas fa-scale-balanced"></i>
-                    <h4>Balance Neto Diario</h4>
-                    <div class="amount" id="dash-balance">S/ 0.00</div>
-                    <p style="font-size: 0.8rem; color: var(--primary); margin-top: 10px;">= Liquidez Actual</p>
-                </div>
-                <!-- NUEVO: Balance Total General -->
-                <div class="stat-card blue" style="border-bottom-color: #a55eea;">
-                    <i class="fas fa-vault"></i>
-                    <h4>Balance Total Acumulado</h4>
-                    <div class="amount" id="dash-balance-total">S/ 0.00</div>
-                    <p style="font-size: 0.8rem; color: #a55eea; margin-top: 10px;">Σ Todos los días</p>
-                </div>
 
-                <!-- NUEVOS: Balances por Método -->
-                <div class="stat-card" style="border-bottom: 3px solid #00d2d3;">
-                    <i class="fas fa-money-bill-wave" style="color: #00d2d3;"></i>
-                    <h4>Efectivo Total</h4>
-                    <div class="amount" id="bal-efectivo" style="color: #00d2d3;">S/ 0.00</div>
-                    <p style="font-size: 0.8rem; opacity: 0.7; margin-top: 10px;">Fondos en Efectivo</p>
+            <div class="stats-grid"
+                style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 40px;">
+                <div class="ag-card green">
+                    <i class="fas fa-wave-square"
+                        style="color: var(--neon-green); position: absolute; top: 20px; right: 20px; opacity: 0.3;"></i>
+                    <h3>Ingresos del Ciclo</h3>
+                    <div class="amount" id="dash-income">S/ 0.00</div>
+                    <p style="font-size: 0.7rem; color: var(--neon-green); margin-top: 10px; font-weight: 700;">+
+                        SINCRONIZACIÓN ACTIVA</p>
                 </div>
-                <!-- Box 1: Cuanto dinero está en Yape/Plin (Ingresos) -->
-                <div class="stat-card" style="border-bottom: 3px solid #ff9f43;">
-                    <i class="fas fa-mobile-screen-button" style="color: #ff9f43;"></i>
-                    <h4>Yape / Plin (Ingresos)</h4>
-                    <div class="amount" id="yape-plin-inc" style="color: #ff9f43;">S/ 0.00</div>
-                    <p style="font-size: 0.8rem; opacity: 0.7; margin-top: 10px;">Total Recaudado</p>
+                <div class="ag-card red">
+                    <i class="fas fa-arrow-down-long"
+                        style="color: var(--neon-red); position: absolute; top: 20px; right: 20px; opacity: 0.3;"></i>
+                    <h3>Salidas Detectadas</h3>
+                    <div class="amount" id="dash-expense">S/ 0.00</div>
+                    <p style="font-size: 0.7rem; color: var(--neon-red); margin-top: 10px; font-weight: 700;">- CONTROL
+                        DE PERDIDAS</p>
                 </div>
-                <!-- Box 2: Cuanto se gastó en Yape/Plin -->
-                <div class="stat-card" style="border-bottom: 3px solid #ff4757;">
-                    <i class="fas fa-wallet" style="color: #ff4757;"></i>
-                    <h4>Yape / Plin (Gastos)</h4>
-                    <div class="amount" id="yape-plin-exp" style="color: #ff4757;">S/ 0.00</div>
-                    <p style="font-size: 0.8rem; opacity: 0.7; margin-top: 10px;">Total Gastado</p>
+                <div class="ag-card blue">
+                    <i class="fas fa-microchip"
+                        style="color: var(--neon-blue); position: absolute; top: 20px; right: 20px; opacity: 0.3;"></i>
+                    <h3>Balance del Día</h3>
+                    <div class="amount" id="dash-balance">S/ 0.00</div>
+                    <p style="font-size: 0.7rem; color: var(--neon-blue); margin-top: 10px; font-weight: 700;">=
+                        RENDIMIENTO NETO</p>
                 </div>
-                <div class="stat-card" style="border-bottom: 3px solid #54a0ff;">
-                    <i class="fas fa-university" style="color: #54a0ff;"></i>
-                    <h4>Transferencias Netas</h4>
-                    <div class="amount" id="bal-transferencia" style="color: #54a0ff;">S/ 0.00</div>
-                    <p style="font-size: 0.8rem; opacity: 0.7; margin-top: 10px;">Banco / Interbancario</p>
+                <div class="ag-card purple" style="border-bottom: 3px solid var(--neon-purple);">
+                    <i class="fas fa-vault"
+                        style="color: var(--neon-purple); position: absolute; top: 20px; right: 20px; opacity: 0.3;"></i>
+                    <h3>Liquidez Histórica</h3>
+                    <div class="amount" id="dash-balance-total">S/ 0.00</div>
+                    <p style="font-size: 0.7rem; color: var(--neon-purple); margin-top: 10px; font-weight: 700;">Σ
+                        CAPITAL TOTAL</p>
                 </div>
             </div>
 
-            <div class="card-editor">
-                <h3><i class="fas fa-clock-rotate-left"></i> Últimas Transacciones</h3>
+            <div
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 40px;">
+                <div class="ag-card" style="border-radius: 18px; padding: 18px; border-color: rgba(0, 210, 211, 0.3);">
+                    <h4 style="color: #00d2d3;">💵 Efectivo</h4>
+                    <div class="orbitron" id="bal-efectivo"
+                        style="font-size: 1.2rem; font-weight: 700; color: #00d2d3;">S/ 0.00</div>
+                </div>
+                <div class="ag-card" style="border-radius: 18px; padding: 18px; border-color: rgba(255, 159, 67, 0.3);">
+                    <h4 style="color: #ff9f43;">📱 Yape/Plin (Inc)</h4>
+                    <div class="orbitron" id="yape-plin-inc"
+                        style="font-size: 1.2rem; font-weight: 700; color: #ff9f43;">S/ 0.00</div>
+                </div>
+                <div class="ag-card" style="border-radius: 18px; padding: 18px; border-color: rgba(255, 71, 87, 0.3);">
+                    <h4 style="color: #ff4757;">📱 Yape/Plin (Exp)</h4>
+                    <div class="orbitron" id="yape-plin-exp"
+                        style="font-size: 1.2rem; font-weight: 700; color: #ff4757;">S/ 0.00</div>
+                </div>
+                <div class="ag-card" style="border-radius: 18px; padding: 18px; border-color: rgba(84, 160, 255, 0.3);">
+                    <h4 style="color: #54a0ff;">🏦 Bancos</h4>
+                    <div class="orbitron" id="bal-transferencia"
+                        style="font-size: 1.2rem; font-weight: 700; color: #54a0ff;">S/ 0.00</div>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 40px;">
+                <h3 class="orbitron"
+                    style="font-size: 0.85rem; margin-bottom: 20px; color: #666; letter-spacing: 2px; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-pie-chart" style="color: var(--neon-red);"></i> DISTRIBUCIÓN DE GASTOS
+                </h3>
+                <div id="category-stats-grid"
+                    style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px;">
+                    <!-- Rendered by JS -->
+                </div>
+            </div>
+
+            <div class="card-editor" style="background: rgba(255,255,255,0.01); border-radius: 30px; padding: 30px;">
+                <h3 class="orbitron" style="font-size: 1rem; margin-bottom: 25px; color: #666; letter-spacing: 2px;">
+                    FLUJO DINÁMICO</h3>
                 <div id="transactions-list"></div>
             </div>
         </section>
@@ -887,51 +1400,91 @@
             </div>
         </section>
 
-        <!-- SECCIÓN: FINANCE ENTRY -->
         <section id="sec-finance" class="content-sec hidden">
-            <div class="form-row">
-                <div class="card-editor">
-                    <h3><i class="fas fa-plus-circle" style="color: var(--accent-green);"></i> Registrar Ingreso</h3>
-                    <div class="field-group"><label>Concepto de Entrada</label><input id="fin-inc-concept"
-                            placeholder="Ej: Venta Cámaras IP"></div>
-                    <div class="form-row">
-                        <div class="field-group"><label>Monto (S/)</label><input id="fin-inc-amount" type="number"
-                                step="0.01"></div>
-                        <div class="field-group"><label>Medio de Pago</label>
-                            <select id="fin-inc-method"
-                                style="background: var(--dark-void); color: white; border: 1px solid var(--glass-border); padding: 10px; border-radius: 8px; width: 100%;">
-                                <option value="Efectivo">Efectivo</option>
-                                <option value="Transferencia">Transferencia</option>
-                                <option value="Yape/Plin">Yape / Plin</option>
-                            </select>
-                        </div>
-                        <div class="field-group"><label>Fecha</label><input id="fin-inc-date" type="date"></div>
-                    </div>
-                    <button class="btn-action" onclick="saveFinance('income')">Guardar Ingreso <i
-                            class="fas fa-check"></i></button>
-                </div>
-                <div class="card-editor">
-                    <h3><i class="fas fa-minus-circle" style="color: var(--accent-red);"></i> Registrar Salida</h3>
-                    <div class="field-group"><label>Concepto de Gasto</label><input id="fin-exp-concept"
-                            placeholder="Ej: Pago Proveedor"></div>
-                    <div class="form-row">
-                        <div class="field-group"><label>Monto (S/)</label><input id="fin-exp-amount" type="number"
-                                step="0.01"></div>
-                        <div class="field-group"><label>Medio de Pago</label>
-                            <select id="fin-exp-method"
-                                style="background: var(--dark-void); color: white; border: 1px solid var(--glass-border); padding: 10px; border-radius: 8px; width: 100%;">
-                                <option value="Efectivo">Efectivo</option>
-                                <option value="Transferencia">Transferencia</option>
-                                <option value="Yape/Plin">Yape / Plin</option>
-                            </select>
-                        </div>
-                        <div class="field-group"><label>Fecha</label><input id="fin-exp-date" type="date"></div>
-                    </div>
-                    <button class="btn-action" style="background: linear-gradient(135deg, var(--accent-red), #991b1b);"
-                        onclick="saveFinance('expense')">Guardar Egreso <i class="fas fa-check"></i></button>
+            <div class="ag-card" style="max-width: 600px; margin: 40px auto; padding: 40px; text-align: center;">
+                <i class="fas fa-bolt" style="font-size: 3rem; color: var(--neon-blue); margin-bottom: 20px;"></i>
+                <h2 class="orbitron" style="margin-bottom: 15px;">REGISTRO ANTIGRAVITY</h2>
+                <p class="jakarta" style="color: #888; margin-bottom: 30px;">Usa el nodo flotante inferior (+) para
+                    inyectar datos al sistema</p>
+                <div style="display: flex; gap: 15px; justify-content: center;">
+                    <button class="ag-btn-save" onclick="openAgFinanceModal('income')"
+                        style="width: auto; padding: 12px 25px; background: rgba(0, 255, 136, 0.1); color: var(--neon-green); border: 1px solid var(--neon-green);">
+                        + INGRESO
+                    </button>
+                    <button class="ag-btn-save" onclick="openAgFinanceModal('expense')"
+                        style="width: auto; padding: 12px 25px; background: rgba(255, 62, 62, 0.1); color: var(--neon-red); border: 1px solid var(--neon-red);">
+                        - SALIDA
+                    </button>
                 </div>
             </div>
         </section>
+
+        <!-- AG FAB & MODAL -->
+        <button class="ag-fab" id="main-ag-fab" onclick="openAgFinanceModal()" title="Nuevo Movimiento">
+            <i class="fas fa-plus"></i>
+        </button>
+
+        <div class="ag-modal" id="ag-finance-modal">
+            <div class="ag-modal-content">
+                <h2 class="orbitron" id="ag-modal-title"
+                    style="font-size: 1.1rem; margin-bottom: 25px; color: var(--neon-blue); text-align: center; transition: color 0.3s;">
+                    NODAL DE FLUJO</h2>
+
+                <label
+                    style="font-size: 0.7rem; color: #666; text-transform: uppercase; margin-left: 5px; display: block; margin-bottom: 5px;">Tipo
+                    de Operación</label>
+                <select id="ag-fin-type" class="ag-select" onchange="toggleFinCategory(this.value)">
+                    <option value="income">INGRESO (+)</option>
+                    <option value="expense">SALIDA (-)</option>
+                </select>
+
+                <label
+                    style="font-size: 0.7rem; color: #666; text-transform: uppercase; margin-left: 5px; display: block; margin-bottom: 5px;">Concepto
+                    / Descripción</label>
+                <input id="ag-fin-concept" class="ag-input" placeholder="Ej: Venta de Cámara">
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div>
+                        <label
+                            style="font-size: 0.7rem; color: #666; text-transform: uppercase; display: block; margin-bottom: 5px;">Monto
+                            (S/)</label>
+                        <input id="ag-fin-amount" class="ag-input" type="number" step="0.01" placeholder="0.00">
+                    </div>
+                    <div>
+                        <label
+                            style="font-size: 0.7rem; color: #666; text-transform: uppercase; display: block; margin-bottom: 5px;">Fecha</label>
+                        <input id="ag-fin-date" class="ag-input" type="date">
+                    </div>
+                </div>
+
+                <label
+                    style="font-size: 0.7rem; color: #666; text-transform: uppercase; margin-left: 5px; display: block; margin-bottom: 5px;">Método
+                    de Pago</label>
+                <select id="ag-fin-method" class="ag-select">
+                    <option value="Efectivo">💵 Efectivo</option>
+                    <option value="Yape/Plin">📱 Yape / Plin</option>
+                    <option value="Transferencia">🏦 Transferencia</option>
+                </select>
+
+                <div id="ag-category-wrap">
+                    <label
+                        style="font-size: 0.7rem; color: #666; text-transform: uppercase; margin-left: 5px; display: block; margin-top: 15px; margin-bottom: 5px;">Categoría
+                        de Gasto</label>
+                    <select id="ag-fin-category" class="ag-select">
+                        <option value="Otros">📦 Otros / Gral</option>
+                        <option value="Comida">🍲 Comida del Personal</option>
+                        <option value="Combustible">⛽ Combustible</option>
+                        <option value="Personal">👤 Gasto Personal</option>
+                        <option value="Productos">🛍️ Compra de Productos</option>
+                        <option value="Servicios">💡 Servicios (Luz/Agua/Net)</option>
+                    </select>
+                </div>
+
+                <button class="ag-btn-save" id="ag-save-btn" onclick="saveAgFinance()">INJECT DATA</button>
+                <button onclick="closeAgFinanceModal()"
+                    style="background: none; border: none; color: #555; width: 100%; margin-top: 15px; cursor: pointer; font-weight: 700; font-size: 0.8rem;">ABORTAR</button>
+            </div>
+        </div>
 
         <!-- SECCIÓN: WEB CONFIG -->
         <section id="sec-web-config" class="content-sec hidden">
@@ -1022,6 +1575,186 @@
                 <div id="faq-manager-list"></div>
             </div>
         </section>
+
+        <!-- SECCIÓN: CRM & AGENDA -->
+        <section id="sec-calendar" class="content-sec hidden">
+            <div class="section-header" style="margin-bottom: 30px; flex-wrap: wrap; gap: 15px;">
+                <div>
+                    <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.6rem; font-weight: 800;">📅 Agenda & CRM
+                    </h2>
+                    <p style="opacity: 0.5; font-size: 0.9rem;">Citas pendientes, llamadas programadas y seguimiento de
+                        clientes</p>
+                </div>
+                <button class="btn-action" onclick="openAppointmentModal()"
+                    style="background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple)); border: none; color: white;">
+                    <i class="fas fa-plus"></i> Nueva Cita / Llamada
+                </button>
+            </div>
+
+            <!-- Stats rápidas CRM -->
+            <div
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 30px;">
+                <div class="ag-card"
+                    style="padding: 20px; text-align: center; border-bottom: 3px solid var(--neon-blue);">
+                    <div style="font-size: 2rem; font-weight: 800; font-family: 'Orbitron', sans-serif; color: var(--neon-blue);"
+                        id="stat-total-appt">0</div>
+                    <div
+                        style="font-size: 0.7rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px;">
+                        Total Citas</div>
+                </div>
+                <div class="ag-card"
+                    style="padding: 20px; text-align: center; border-bottom: 3px solid var(--neon-green);">
+                    <div style="font-size: 2rem; font-weight: 800; font-family: 'Orbitron', sans-serif; color: var(--neon-green);"
+                        id="stat-done-appt">0</div>
+                    <div
+                        style="font-size: 0.7rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px;">
+                        Completadas</div>
+                </div>
+                <div class="ag-card" style="padding: 20px; text-align: center; border-bottom: 3px solid #f39c12;">
+                    <div style="font-size: 2rem; font-weight: 800; font-family: 'Orbitron', sans-serif; color: #f39c12;"
+                        id="stat-pending-appt">0</div>
+                    <div
+                        style="font-size: 0.7rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px;">
+                        Pendientes</div>
+                </div>
+                <div class="ag-card"
+                    style="padding: 20px; text-align: center; border-bottom: 3px solid var(--neon-purple);">
+                    <div style="font-size: 2rem; font-weight: 800; font-family: 'Orbitron', sans-serif; color: var(--neon-purple);"
+                        id="stat-calls-appt">0</div>
+                    <div
+                        style="font-size: 0.7rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px;">
+                        Llamadas</div>
+                </div>
+            </div>
+
+            <!-- Main calendar layout -->
+            <div class="ag-calendar-container" style="align-items: start;">
+                <!-- Left: Calendar -->
+                <div class="ag-calendar">
+                    <div class="cal-header">
+                        <button onclick="changeMonth(-1)"
+                            style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 8px 14px; border-radius: 10px; cursor: pointer; font-size: 1rem;">‹</button>
+                        <div style="text-align: center;">
+                            <div id="cal-month-label"
+                                style="font-weight: 800; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; font-family: 'Orbitron', sans-serif;">
+                            </div>
+                            <div id="cal-year-label" style="font-size: 0.8rem; opacity: 0.5; margin-top: 2px;"></div>
+                        </div>
+                        <button onclick="changeMonth(1)"
+                            style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 8px 14px; border-radius: 10px; cursor: pointer; font-size: 1rem;">›</button>
+                    </div>
+
+                    <div class="cal-grid" id="cal-grid">
+                        <!-- Rendered by JS -->
+                    </div>
+
+                    <!-- Legend -->
+                    <div
+                        style="display: flex; gap: 20px; margin-top: 20px; opacity: 0.6; font-size: 0.75rem; justify-content: center;">
+                        <span><span
+                                style="display:inline-block; width: 8px; height: 8px; background: var(--neon-blue); border-radius: 50%; margin-right: 5px;"></span>Hoy</span>
+                        <span><span
+                                style="display:inline-block; width: 8px; height: 8px; background: var(--neon-purple); border-radius: 50%; margin-right: 5px;"></span>Con
+                            Citas</span>
+                        <span><span
+                                style="display:inline-block; width: 8px; height: 8px; background: rgba(255,255,255,0.3); border-radius: 50%; margin-right: 5px;"></span>Seleccionado</span>
+                    </div>
+                </div>
+
+                <!-- Right: Daily Appointments -->
+                <div class="crm-sidebar">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-weight: 800; font-size: 1rem;" id="crm-day-label">Selecciona un día</div>
+                            <div style="font-size: 0.8rem; opacity: 0.5;" id="crm-appt-count">— citas</div>
+                        </div>
+                        <button onclick="openAppointmentModal()"
+                            style="background: rgba(52,152,219,0.1); border: 1px solid var(--neon-blue); color: var(--neon-blue); padding: 8px 16px; border-radius: 12px; cursor: pointer; font-size: 0.8rem; font-weight: 700;">+
+                            AGENDAR</button>
+                    </div>
+
+                    <div id="crm-appointments-list"
+                        style="display: flex; flex-direction: column; gap: 12px; max-height: 500px; overflow-y: auto; padding-right: 5px;">
+                        <div style="text-align: center; padding: 40px 20px; opacity: 0.3; font-size: 0.9rem;">
+                            <i class="fas fa-calendar-check"
+                                style="font-size: 2rem; display: block; margin-bottom: 10px;"></i>
+                            Selecciona un día en el calendario
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming this week -->
+            <div class="ag-calendar" style="margin-top: 25px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3
+                        style="font-family: 'Orbitron', sans-serif; font-size: 0.9rem; letter-spacing: 2px; opacity: 0.7;">
+                        PRÓXIMAS CITAS</h3>
+                    <select id="crm-filter-type" onchange="loadUpcomingAppointments()"
+                        style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 6px 12px; border-radius: 10px; font-size: 0.8rem; outline: none; cursor: pointer;">
+                        <option value="all">Todos los tipos</option>
+                        <option value="call">Solo Llamadas</option>
+                        <option value="meeting">Solo Reuniones</option>
+                        <option value="visit">Solo Visitas</option>
+                    </select>
+                </div>
+                <div id="upcoming-appointments-list" style="display: flex; flex-direction: column; gap: 10px;"></div>
+            </div>
+        </section>
+
+        <!-- MODAL: NUEVA CITA -->
+        <div class="ag-modal" id="appointment-modal" style="z-index: 4000;">
+            <div class="ag-modal-content" style="max-width: 520px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h2 style="font-family: 'Orbitron', sans-serif; font-size: 1rem; color: var(--neon-blue);">NUEVA
+                        CITA</h2>
+                    <button onclick="closeAppointmentModal()"
+                        style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; width: 35px; height: 35px; border-radius: 10px; cursor: pointer; font-size: 1rem;">✕</button>
+                </div>
+
+                <label
+                    style="font-size: 0.7rem; color: #666; text-transform: uppercase; display: block; margin-bottom: 5px;">Tipo
+                    de Evento</label>
+                <select id="appt-type" class="ag-select" style="margin-bottom: 15px;">
+                    <option value="call">📞 Llamada a Cliente</option>
+                    <option value="meeting">🤝 Reunión</option>
+                    <option value="visit">🏠 Visita al Cliente</option>
+                    <option value="followup">🔄 Seguimiento</option>
+                </select>
+
+                <label
+                    style="font-size: 0.7rem; color: #666; text-transform: uppercase; display: block; margin-bottom: 5px;">Nombre
+                    del Cliente</label>
+                <input id="appt-client" class="ag-input" placeholder="Ej: Juan Pérez" style="margin-bottom: 15px;">
+
+                <label
+                    style="font-size: 0.7rem; color: #666; text-transform: uppercase; display: block; margin-bottom: 5px;">Teléfono
+                    / Contacto</label>
+                <input id="appt-phone" class="ag-input" placeholder="Ej: 987 654 321" style="margin-bottom: 15px;">
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
+                    <div>
+                        <label
+                            style="font-size: 0.7rem; color: #666; text-transform: uppercase; display: block; margin-bottom: 5px;">Fecha</label>
+                        <input id="appt-date" class="ag-input" type="date">
+                    </div>
+                    <div>
+                        <label
+                            style="font-size: 0.7rem; color: #666; text-transform: uppercase; display: block; margin-bottom: 5px;">Hora</label>
+                        <input id="appt-time" class="ag-input" type="time">
+                    </div>
+                </div>
+
+                <label
+                    style="font-size: 0.7rem; color: #666; text-transform: uppercase; display: block; margin-bottom: 5px;">Notas
+                    / Descripción</label>
+                <textarea id="appt-notes" class="ag-input"
+                    placeholder="Ej: Cliente interesado en cámaras IP para local comercial..."
+                    style="min-height: 80px; resize: none; margin-bottom: 15px;"></textarea>
+
+                <button class="ag-btn-save" id="appt-save-btn" onclick="saveAppointment()">GUARDAR CITA</button>
+            </div>
+        </div>
 
         <!-- SECCIÓN: USUARIOS & PERMISOS -->
         <section id="sec-users" class="content-sec hidden">
@@ -1457,6 +2190,7 @@
         function switchSection(id) {
             const navGroups = {
                 'dashboard': 'nav-erp', 'finance': 'nav-erp',
+                'calendar': 'nav-crm',
                 'hr': 'nav-hr',
                 'web-config': 'nav-web', 'web-page': 'nav-web', 'web-portfolio': 'nav-web', 'web-social': 'nav-web',
                 'users': 'nav-admin',
@@ -1481,6 +2215,7 @@
             const titles = {
                 'dashboard': 'Dashboard de Finanzas',
                 'finance': 'Registro de Operaciones',
+                'calendar': '📅 Agenda & CRM',
                 'web-config': 'Identidad & Contacto',
                 'web-page': 'Contenido Home Page',
                 'web-portfolio': 'Galería de Imágenes',
@@ -1591,8 +2326,8 @@
         // --- 3. ERP LOGIC ---
         async function showDailyHistory() {
             document.getElementById('modal-history').classList.remove('hidden');
-            const tbody = document.getElementById('history-table-body');
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Cargando historial...</td></tr>';
+            const list = document.getElementById('history-table-body');
+            list.innerHTML = `<div style="text-align:center; padding:30px; opacity:0.4;"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;"></i><p style="margin-top:10px; font-size:0.85rem;">Cargando bitácora...</p></div>`;
 
             try {
                 const { data, error } = await supabaseClient
@@ -1602,7 +2337,7 @@
 
                 if (error) throw error;
 
-                // Agrupar por fecha
+                // Group by date
                 const groups = {};
                 (data || []).forEach(t => {
                     if (!groups[t.date]) groups[t.date] = { inc: 0, exp: 0 };
@@ -1613,22 +2348,60 @@
 
                 const sortedDates = Object.keys(groups).sort((a, b) => new Date(b) - new Date(a));
 
-                tbody.innerHTML = sortedDates.length ? sortedDates.map(date => {
+                // Update summary stats in header
+                const totalInc = Object.values(groups).reduce((s, g) => s + g.inc, 0);
+                const totalExp = Object.values(groups).reduce((s, g) => s + g.exp, 0);
+                const totalBal = totalInc - totalExp;
+                const el = id => document.getElementById(id);
+                if (el('hist-total-inc')) el('hist-total-inc').textContent = `S/ ${totalInc.toFixed(2)}`;
+                if (el('hist-total-exp')) el('hist-total-exp').textContent = `S/ ${totalExp.toFixed(2)}`;
+                if (el('hist-total-bal')) el('hist-total-bal').textContent = `S/ ${totalBal.toFixed(2)}`;
+                if (el('hist-total-bal')) el('hist-total-bal').style.color = totalBal >= 0 ? 'var(--neon-green)' : 'var(--neon-red)';
+                if (el('hist-days-count')) el('hist-days-count').textContent = sortedDates.length;
+
+                if (!sortedDates.length) {
+                    list.innerHTML = `<div style="text-align:center; padding:40px; opacity:0.35;"><i class="fas fa-inbox" style="font-size:2rem; display:block; margin-bottom:12px;"></i><p>Sin transacciones registradas aún</p></div>`;
+                    return;
+                }
+
+                list.innerHTML = sortedDates.map((date, idx) => {
                     const g = groups[date];
                     const balance = g.inc - g.exp;
+                    const isPositive = balance >= 0;
+                    const d = new Date(date + 'T00:00:00');
+                    const dayLabel = d.toLocaleDateString('es-PE', { weekday: 'short', day: 'numeric', month: 'short' });
+                    const pct = g.inc > 0 ? Math.min(100, Math.round((g.exp / g.inc) * 100)) : 0;
                     return `
-                        <tr>
-                            <td style="padding: 12px; border-bottom: 1px solid var(--border); font-family: monospace;">${date}</td>
-                            <td style="padding: 12px; border-bottom: 1px solid var(--border); color: var(--accent-green);">S/ ${g.inc.toFixed(2)}</td>
-                            <td style="padding: 12px; border-bottom: 1px solid var(--border); color: var(--accent-red);">S/ ${g.exp.toFixed(2)}</td>
-                            <td style="padding: 12px; border-bottom: 1px solid var(--border); font-weight: 800; color: ${balance >= 0 ? 'var(--primary)' : 'var(--accent-red)'}">S/ ${balance.toFixed(2)}</td>
-                        </tr>
-                    `;
-                }).join('') : '<tr><td colspan="4" style="text-align:center; padding:20px;">No hay transacciones registradas.</td></tr>';
+                    <div class="hist-row" style="--row-delay: ${idx * 0.04}s">
+                        <div class="hist-row-left">
+                            <div class="hist-day-badge">
+                                <span class="hist-day-num">${d.getDate()}</span>
+                                <span class="hist-day-month">${d.toLocaleDateString('es-PE', { month: 'short' })}</span>
+                            </div>
+                            <div>
+                                <div style="font-weight:700; font-size:0.9rem; text-transform:capitalize;">${dayLabel}</div>
+                                <div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">${date}</div>
+                            </div>
+                        </div>
+                        <div class="hist-row-amounts">
+                            <div class="hist-amount inc"><i class="fas fa-arrow-up"></i> S/ ${g.inc.toFixed(2)}</div>
+                            <div class="hist-amount exp"><i class="fas fa-arrow-down"></i> S/ ${g.exp.toFixed(2)}</div>
+                        </div>
+                        <div class="hist-row-balance" style="color: ${isPositive ? 'var(--neon-green)' : 'var(--neon-red)'}">
+                            <span style="font-family:'Orbitron',sans-serif; font-size:0.95rem; font-weight:800;">S/ ${balance.toFixed(2)}</span>
+                            <div class="hist-bar-wrap">
+                                <div class="hist-bar" style="width:${pct}%; background: ${isPositive ? 'var(--neon-green)' : 'var(--neon-red)'};"></div>
+                            </div>
+                        </div>
+                        <div class="hist-trend-icon" style="color: ${isPositive ? 'var(--neon-green)' : 'var(--neon-red)'}">
+                            <i class="fas fa-${isPositive ? 'trending-up' : 'trending-down'}"></i>
+                        </div>
+                    </div>`;
+                }).join('');
 
             } catch (err) {
                 console.error("Error historial:", err);
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--accent-red); padding:20px;">Error al cargar datos.</td></tr>';
+                list.innerHTML = `<div style="text-align:center; padding:30px; color:var(--neon-red);"><i class="fas fa-exclamation-triangle"></i> Error al cargar datos.</div>`;
             }
         }
 
@@ -1668,6 +2441,51 @@
             document.getElementById('dash-expense').innerText = `S/ ${totalExp.toFixed(2)}`;
             document.getElementById('dash-balance').innerText = `S/ ${(totalInc - totalExp).toFixed(2)}`;
 
+            // --- CATEGORY BREAKDOWN ---
+            const catTotals = {};
+            if (trans) {
+                trans.forEach(t => {
+                    if (t.type === 'expense') {
+                        const cat = t.category || 'Otros';
+                        catTotals[cat] = (catTotals[cat] || 0) + (parseFloat(t.amount) || 0);
+                    }
+                });
+            }
+
+            const catGrid = document.getElementById('category-stats-grid');
+            if (catGrid) {
+                const categories = ['Comida', 'Combustible', 'Personal', 'Productos', 'Servicios', 'Otros'];
+                const catIcons = {
+                    'Comida': 'fa-utensils', 'Combustible': 'fa-gas-pump', 'Personal': 'fa-user-tag',
+                    'Productos': 'fa-box-open', 'Servicios': 'fa-bolt', 'Otros': 'fa-tags'
+                };
+                const catColors = {
+                    'Comida': '#ff9f43', 'Combustible': '#ff4757', 'Personal': '#54a0ff',
+                    'Productos': '#c56cf0', 'Servicios': '#32ff7e', 'Otros': '#7f8c8d'
+                };
+
+                const html = categories.map(cat => {
+                    const total = catTotals[cat] || 0;
+                    if (total === 0) return '';
+                    return `
+                        <div class="ag-card" style="padding: 16px; border-radius: 20px; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.05); position: relative; overflow: hidden;">
+                            <div style="position: absolute; top:0; left:0; width: 4px; height: 100%; background: ${catColors[cat] || 'var(--neon-red)'}; opacity: 0.6;"></div>
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
+                                <div style="width: 32px; height: 32px; border-radius: 10px; background: rgba(255,255,255,0.05); color: ${catColors[cat]}; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">
+                                    <i class="fas ${catIcons[cat]}"></i>
+                                </div>
+                                <span style="font-size: 0.65rem; font-weight: 800; color: #666; text-transform: uppercase; letter-spacing: 1px;">${cat}</span>
+                            </div>
+                            <div class="orbitron" style="font-size: 1.2rem; font-weight: 800; color: var(--text-main);">S/ ${total.toFixed(2)}</div>
+                        </div>
+                    `;
+                }).join('');
+
+                catGrid.innerHTML = html || `<div style="grid-column: 1/-1; text-align: center; padding: 30px; background: rgba(255,255,255,0.02); border-radius: 20px; border: 1px dashed rgba(255,255,255,0.1); color: #444; font-size: 0.8rem;">
+                    <i class="fas fa-receipt" style="margin-bottom: 10px; display: block; font-size: 1.5rem;"></i> Sin gastos por categoría hoy
+                </div>`;
+            }
+
             await calculateGlobalBalances();
 
             // Mostrar también las últimas 5 transacciones aunque no sean de hoy, si hoy está vacío
@@ -1684,26 +2502,45 @@
             }
 
             const list = document.getElementById('transactions-list');
-            list.innerHTML = listToDisplay && listToDisplay.length ? listToDisplay.map(t => `
-                <div class="manager-item">
-                    <div class="item-info">
-                        <b>${t.concept}</b>
-                        <span>${t.type === 'income' ? 'Ingreso' : 'Salida'} - ${t.date}</span>
-                        <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 5px; display: flex; gap: 15px;">
-                            <span><i class="fas fa-credit-card" style="font-size: 0.65rem;"></i> ${t.payment_method || 'Efectivo'}</span>
-                            <span><i class="fas fa-user-pen" style="font-size: 0.65rem;"></i> ${t.recorded_by || 'Sistema'}</span>
+            list.innerHTML = listToDisplay && listToDisplay.length ? listToDisplay.map(t => {
+                const catIcons = {
+                    'Comida': 'fa-utensils',
+                    'Combustible': 'fa-gas-pump',
+                    'Personal': 'fa-user-tag',
+                    'Productos': 'fa-box-open',
+                    'Servicios': 'fa-bolt',
+                    'Otros': 'fa-tags',
+                    'Ingreso': 'fa-arrow-trend-up'
+                };
+                const catIcon = catIcons[t.category] || 'fa-receipt';
+
+                return `
+                <div class="ag-transaction-item">
+                    <div style="display: flex; gap: 15px; align-items: center;">
+                        <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; font-size: 1rem;">
+                            <i class="fas ${catIcon}" style="color: ${t.type === 'income' ? 'var(--neon-green)' : 'var(--neon-red)'}"></i>
+                        </div>
+                        <div>
+                            <b class="jakarta" style="font-size: 0.95rem; display: block;">${t.concept}</b>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                                <span class="ag-tag ${t.type === 'income' ? 'inc' : 'exp'}" style="font-size: 0.65rem;">${t.type === 'income' ? 'INGRESO' : (t.category || 'SALIDA')}</span>
+                                <span style="font-size: 0.7rem; color: #666;">${t.date} • ${t.payment_method || 'Efectivo'}</span>
+                            </div>
                         </div>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 20px;">
-                        <div style="font-weight: 800; color: ${t.type === 'income' ? 'var(--accent-green)' : 'var(--accent-red)'}">
-                            ${t.type === 'income' ? '+' : '-'} S/ ${parseFloat(t.amount).toFixed(2)}
+                    <div style="text-align: right; display: flex; align-items: center; gap: 20px;">
+                        <div>
+                            <div class="orbitron" style="font-weight: 800; font-size: 1.1rem; color: ${t.type === 'income' ? 'var(--neon-green)' : 'var(--neon-red)'}">
+                                ${t.type === 'income' ? '+' : '-'} S/ ${parseFloat(t.amount).toFixed(2)}
+                            </div>
+                            <span style="font-size: 0.65rem; color: #444; text-transform: uppercase;">vía ${t.recorded_by || 'Sistema'}</span>
                         </div>
-                        <button class="btn-circle del" onclick="deleteTransaction('${t.id}')" title="Eliminar Registro">
+                        <button class="btn-circle del" onclick="deleteTransaction('${t.id}')" title="Eliminar Registro" style="width: 32px; height: 32px; font-size: 0.8rem;">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
-                </div>
-            `).join('') : '<p style="text-align: center; color: var(--text-muted); padding: 10px;">Sin movimientos registrados hoy.</p>';
+                </div>`;
+            }).join('') : `<div style="text-align:center; padding:40px; opacity:0.3;"><i class="fas fa-inbox" style="font-size:2rem; margin-bottom:10px;"></i><p>Sin transacciones</p></div>`;
         }
 
         async function calculateGlobalBalances() {
@@ -1735,11 +2572,11 @@
                 });
             }
 
-            document.getElementById('dash-balance-total').innerText = `S/ ${(totalCents / 100).toFixed(2)}`;
-            document.getElementById('bal-efectivo').innerText = `S/ ${(methods['Efectivo'] / 100).toFixed(2)}`;
-            document.getElementById('yape-plin-inc').innerText = `S/ ${(methods['Yape/Plin_inc'] / 100).toFixed(2)}`;
-            document.getElementById('yape-plin-exp').innerText = `S/ ${(methods['Yape/Plin_exp'] / 100).toFixed(2)}`;
-            document.getElementById('bal-transferencia').innerText = `S/ ${(methods['Transferencia'] / 100).toFixed(2)}`;
+            document.getElementById('dash-balance-total').innerText = `S / ${(totalCents / 100).toFixed(2)} `;
+            document.getElementById('bal-efectivo').innerText = `S / ${(methods['Efectivo'] / 100).toFixed(2)} `;
+            document.getElementById('yape-plin-inc').innerText = `S / ${(methods['Yape/Plin_inc'] / 100).toFixed(2)} `;
+            document.getElementById('yape-plin-exp').innerText = `S / ${(methods['Yape/Plin_exp'] / 100).toFixed(2)} `;
+            document.getElementById('bal-transferencia').innerText = `S / ${(methods['Transferencia'] / 100).toFixed(2)} `;
         }
 
         async function deleteTransaction(id) {
@@ -1755,11 +2592,11 @@
         }
 
         async function saveFinance(type) {
-            const conceptEl = document.getElementById(`fin-${type === 'income' ? 'inc' : 'exp'}-concept`);
-            const amountEl = document.getElementById(`fin-${type === 'income' ? 'inc' : 'exp'}-amount`);
-            const dateEl = document.getElementById(`fin-${type === 'income' ? 'inc' : 'exp'}-date`);
+            const conceptEl = document.getElementById(`fin - ${type === 'income' ? 'inc' : 'exp'} -concept`);
+            const amountEl = document.getElementById(`fin - ${type === 'income' ? 'inc' : 'exp'} -amount`);
+            const dateEl = document.getElementById(`fin - ${type === 'income' ? 'inc' : 'exp'} -date`);
 
-            const methodEl = document.getElementById(`fin-${type === 'income' ? 'inc' : 'exp'}-method`);
+            const methodEl = document.getElementById(`fin - ${type === 'income' ? 'inc' : 'exp'} -method`);
 
             const concept = conceptEl.value;
             const amount = amountEl.value;
@@ -1917,15 +2754,15 @@
                 target.innerHTML = Object.keys(groups).sort().map(empName => {
                     const itemsHtml = groups[empName].map(item => renderItemHtml(item, table)).join('');
                     return `
-                        <div class="hr-group">
+                < div class="hr-group" >
                             <div class="hr-group-header">
                                 <i class="fas fa-user-circle"></i> ${empName}
                             </div>
                             <div class="hr-group-items">
                                 ${itemsHtml}
                             </div>
-                        </div>
-                    `;
+                        </div >
+                `;
                 }).join('');
             } else {
                 target.innerHTML = data.map(item => renderItemHtml(item, table)).join('');
@@ -1937,25 +2774,25 @@
             const displayName = item.title || item.name || item.question || item.username || (item.employees ? item.employees.name : 'Desconocido');
 
             let extraInfo = '';
-            if (table === 'employee_advances') extraInfo = `<span style="color: var(--accent-red); font-weight: bold;">- S/ ${item.amount}</span>`;
+            if (table === 'employee_advances') extraInfo = `< span style = "color: var(--accent-red); font-weight: bold;" > - S / ${item.amount}</span > `;
             else if (table === 'employee_attendance') {
                 const color = item.status === 'asistio' ? 'var(--accent-green)' : (item.status === 'falto' ? 'var(--accent-red)' : '#ff9f43');
                 extraInfo = `
-                    <div style="display: flex; flex-direction: column;">
+                < div style = "display: flex; flex-direction: column;" >
                         <span style="color: ${color}; font-weight: bold; cursor: help;" onclick="if('${item.notes || ''}') alert('Detalle: ${item.notes || 'Sin notas'}')">
                             ${item.status.toUpperCase()} ${item.notes ? '<i class="fas fa-info-circle" style="font-size: 0.8rem; margin-left: 5px;"></i>' : ''}
                         </span>
                         <span style="font-size: 0.75rem; opacity: 0.7;">Fecha: ${item.attendance_date}</span>
                         ${item.notes ? `<span style="font-size: 0.85rem; color: var(--text-muted); font-style: italic; margin-top: 4px;">"${item.notes}"</span>` : ''}
-                    </div>
+                    </div >
                 `;
             }
-            else if (table === 'employee_schedules') extraInfo = `<span style="color: var(--primary); font-weight: 500;">${item.day_of_week}: ${item.clock_in} - ${item.clock_out}</span>`;
-            else if (table === 'employee_payments') extraInfo = `<span style="color: var(--accent-green); font-weight: bold;">S/ ${item.net_amount}</span>`;
+            else if (table === 'employee_schedules') extraInfo = `< span style = "color: var(--primary); font-weight: 500;" > ${item.day_of_week}: ${item.clock_in} - ${item.clock_out}</span > `;
+            else if (table === 'employee_payments') extraInfo = `< span style = "color: var(--accent-green); font-weight: bold;" > S / ${item.net_amount}</span > `;
 
             return `
-            <div class="manager-item">
-                ${imgSource ? `<img src="${imgSource}" class="item-img-sm">` : '<div class="item-img-sm-placeholder"><i class="fas fa-user"></i></div>'}
+                < div class="manager-item" >
+                    ${imgSource ? `<img src="${imgSource}" class="item-img-sm">` : '<div class="item-img-sm-placeholder"><i class="fas fa-user"></i></div>'}
                 <div class="item-info">
                     <b>${displayName}</b>
                     ${table === 'erp_users' && item.employees ? `<span style="color: var(--primary); font-size: 0.75rem;"><i class="fas fa-link"></i> Vinculado a: ${item.employees.name}</span>` : ''}
@@ -1971,8 +2808,8 @@
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
-            </div>
-            `;
+            </div >
+                `;
         }
 
         async function openCrudModal(table, id = null) {
@@ -2045,8 +2882,8 @@
                         '</select>';
                 } else if (f === 'employee_id') {
                     inputHtml = '<select id="val-employee_id"><option value="">Cargando trabajadores...</option></select>';
-                    const fieldGroupId = `field-group-${f}`;
-                    form.innerHTML += `<div class="field-group" id="${fieldGroupId}"><label>` + labelText + '</label>' + inputHtml + '</div>';
+                    const fieldGroupId = `field - group - ${f} `;
+                    form.innerHTML += `< div class="field-group" id = "${fieldGroupId}" > <label>` + labelText + '</label>' + inputHtml + '</div > ';
 
                     const { data: emps } = await supabaseClient.from('employees').select('id, name').eq('active', true);
                     const sel = document.getElementById('val-employee_id');
@@ -2229,35 +3066,593 @@
         }
 
         function closeModal() { document.getElementById('editor-modal').classList.add('hidden'); }
+
+        // --- AG v2.0 FINANCE LOGIC ---
+        function openAgFinanceModal(type = 'income') {
+            document.getElementById('ag-fin-type').value = type;
+            document.getElementById('ag-fin-date').value = new Date().toISOString().split('T')[0];
+            toggleFinCategory(type);
+            const modal = document.getElementById('ag-finance-modal');
+            modal.style.display = 'flex';
+        }
+
+        function toggleFinCategory(type) {
+            const catWrap = document.getElementById('ag-category-wrap');
+            const title = document.getElementById('ag-modal-title');
+            const modalContent = document.querySelector('.ag-modal-content');
+
+            if (type === 'expense') {
+                if (catWrap) catWrap.style.display = 'block';
+                if (title) {
+                    title.innerText = 'REGISTRO DE SALIDA (-)';
+                    title.style.color = 'var(--neon-red)';
+                }
+                if (modalContent) modalContent.style.borderColor = 'rgba(231, 76, 60, 0.4)';
+            } else {
+                if (catWrap) catWrap.style.display = 'none';
+                if (title) {
+                    title.innerText = 'REGISTRO DE INGRESO (+)';
+                    title.style.color = 'var(--neon-green)';
+                }
+                if (modalContent) modalContent.style.borderColor = 'rgba(39, 174, 96, 0.4)';
+            }
+        }
+
+        function closeAgFinanceModal() {
+            document.getElementById('ag-finance-modal').style.display = 'none';
+        }
+
+        async function saveAgFinance() {
+            const type = document.getElementById('ag-fin-type').value;
+            const concept = document.getElementById('ag-fin-concept').value;
+            const amount = document.getElementById('ag-fin-amount').value;
+            const date = document.getElementById('ag-fin-date').value;
+            const method = document.getElementById('ag-fin-method').value;
+            const category = document.getElementById('ag-fin-category').value;
+            const btn = document.getElementById('ag-save-btn');
+
+            if (!concept || !amount || !date) return showToast("Faltan datos críticos", "error");
+
+            btn.disabled = true;
+            btn.innerText = "INYECTANDO...";
+
+            const { error } = await supabaseClient.from('erp_transactions').insert([{
+                concept,
+                amount: parseFloat(amount),
+                date: date,
+                type: type,
+                recorded_by: activeUserName || "Master Admin",
+                payment_method: method,
+                category: type === 'expense' ? category : 'Ingreso'
+            }]);
+
+            btn.disabled = false;
+            btn.innerText = "INJECT DATA";
+
+            if (error) {
+                showToast("ERROR DE NÚCLEO: " + error.message, "error");
+            } else {
+                showToast("DATOS SINCRONIZADOS CORRECTAMENTE");
+                closeAgFinanceModal();
+                document.getElementById('ag-fin-concept').value = "";
+                document.getElementById('ag-fin-amount').value = "";
+                loadERP();
+            }
+        }
+
+        // ============================================================
+        // --- CRM & CALENDAR LOGIC ---
+        // ============================================================
+        let calCurrentDate = new Date();
+        let calSelectedDate = null;
+        let allAppointments = [];
+
+        const TYPE_ICONS = { call: '📞', meeting: '🤝', visit: '🏠', followup: '🔄' };
+        const TYPE_COLORS = { call: 'var(--neon-blue)', meeting: 'var(--neon-green)', visit: '#f39c12', followup: 'var(--neon-purple)' };
+        const STATUS_COLORS = { pending: '#f39c12', done: 'var(--neon-green)', cancelled: 'var(--neon-red)' };
+
+        function openAppointmentModal(apptDate = null) {
+            document.getElementById('appt-client').value = '';
+            document.getElementById('appt-phone').value = '';
+            document.getElementById('appt-notes').value = '';
+            document.getElementById('appt-type').value = 'call';
+            const today = apptDate || (calSelectedDate ? calSelectedDate : new Date().toISOString().split('T')[0]);
+            document.getElementById('appt-date').value = today;
+            document.getElementById('appt-time').value = '';
+            document.getElementById('appointment-modal').style.display = 'flex';
+        }
+
+        function closeAppointmentModal() {
+            document.getElementById('appointment-modal').style.display = 'none';
+        }
+
+        async function saveAppointment() {
+            const client = document.getElementById('appt-client').value.trim();
+            const phone = document.getElementById('appt-phone').value.trim();
+            const date = document.getElementById('appt-date').value;
+            const time = document.getElementById('appt-time').value;
+            const type = document.getElementById('appt-type').value;
+            const notes = document.getElementById('appt-notes').value.trim();
+            const btn = document.getElementById('appt-save-btn');
+
+            if (!client || !date) return showToast('El nombre del cliente y la fecha son obligatorios', 'error');
+
+            btn.disabled = true;
+            btn.innerText = 'GUARDANDO...';
+
+            const { error } = await supabaseClient.from('crm_appointments').insert([{
+                client_name: client,
+                client_phone: phone,
+                appointment_date: date,
+                appointment_time: time || null,
+                description: notes,
+                type: type,
+                status: 'pending'
+            }]);
+
+            btn.disabled = false;
+            btn.innerText = 'GUARDAR CITA';
+
+            if (error) {
+                showToast('Error al guardar: ' + error.message, 'error');
+            } else {
+                showToast('✅ Cita agendada correctamente');
+                closeAppointmentModal();
+                await loadAllAppointments();
+                if (calSelectedDate) loadDayAppointments(calSelectedDate);
+            }
+        }
+
+        async function loadAllAppointments() {
+            const { data, error } = await supabaseClient
+                .from('crm_appointments')
+                .select('*')
+                .order('appointment_date', { ascending: true })
+                .order('appointment_time', { ascending: true });
+
+            if (!error) {
+                allAppointments = data || [];
+                renderCalendar();
+                updateCrmStats();
+                loadUpcomingAppointments();
+            }
+        }
+
+        function renderCalendar() {
+            const year = calCurrentDate.getFullYear();
+            const month = calCurrentDate.getMonth();
+            const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+            document.getElementById('cal-month-label').textContent = monthNames[month];
+            document.getElementById('cal-year-label').textContent = year;
+
+            const grid = document.getElementById('cal-grid');
+            const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            const today = new Date();
+
+            // Get days with appointments for this month
+            const appointmentDays = new Set(
+                allAppointments
+                    .filter(a => {
+                        const d = new Date(a.appointment_date + 'T00:00:00');
+                        return d.getFullYear() === year && d.getMonth() === month;
+                    })
+                    .map(a => new Date(a.appointment_date + 'T00:00:00').getDate())
+            );
+
+            let html = dayNames.map(d => `<div class="cal-day-name">${d}</div>`).join('');
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            // Empty cells
+            for (let i = 0; i < firstDay; i++) {
+                html += `<div class="cal-day empty"></div>`;
+            }
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const isToday = today.getFullYear() === year && today.getMonth() === month && today.getDate() === d;
+                const isSelected = calSelectedDate === dateStr;
+                const hasEvent = appointmentDays.has(d);
+
+                const classes = ['cal-day',
+                    isToday ? 'today' : '',
+                    isSelected ? 'active' : '',
+                    hasEvent ? 'has-event' : ''
+                ].filter(Boolean).join(' ');
+
+                html += `<div class="${classes}" onclick="selectCalDay('${dateStr}')">${d}</div>`;
+            }
+
+            grid.innerHTML = html;
+        }
+
+        function selectCalDay(dateStr) {
+            calSelectedDate = dateStr;
+            renderCalendar();
+            loadDayAppointments(dateStr);
+        }
+
+        function loadDayAppointments(dateStr) {
+            const dayAppts = allAppointments.filter(a => a.appointment_date === dateStr);
+            const d = new Date(dateStr + 'T00:00:00');
+            const fmt = d.toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long' });
+
+            document.getElementById('crm-day-label').textContent = fmt.charAt(0).toUpperCase() + fmt.slice(1);
+            document.getElementById('crm-appt-count').textContent = `${dayAppts.length} cita${dayAppts.length !== 1 ? 's' : ''}`;
+
+            const list = document.getElementById('crm-appointments-list');
+            if (dayAppts.length === 0) {
+                list.innerHTML = `<div style="text-align: center; padding: 40px 20px; opacity: 0.3; font-size: 0.9rem;">
+                    <i class="fas fa-calendar-plus" style="font-size: 2rem; display: block; margin-bottom: 10px;"></i>
+                    Sin citas para este día.<br>
+                    <small style="font-size: 0.8rem;">Haz clic en "+ Agendar" para crear una.</small>
+                </div>`;
+                return;
+            }
+
+            list.innerHTML = dayAppts.map(a => {
+                const icon = TYPE_ICONS[a.type] || '📋';
+                const color = TYPE_COLORS[a.type] || 'var(--neon-blue)';
+                const statusColor = STATUS_COLORS[a.status] || '#f39c12';
+                const statusLabel = { pending: 'Pendiente', done: 'Completada', cancelled: 'Cancelada' }[a.status] || 'Pendiente';
+                const timeStr = a.appointment_time ? a.appointment_time.slice(0, 5) : 'Sin hora';
+
+                return `<div class="crm-item" style="border-left: 3px solid ${color};">
+                    <div class="status-dot" style="background: ${statusColor};"></div>
+                    <div style="font-size: 1.3rem; margin-bottom: 6px;">${icon}</div>
+                    <b>${a.client_name}</b>
+                    <span>${a.client_phone || 'Sin teléfono'}</span>
+                    ${a.description ? `<span style="margin-top: 4px; font-style: italic;">"${a.description}"</span>` : ''}
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; flex-wrap: wrap; gap: 8px;">
+                        <span class="time-tag">⏰ ${timeStr}</span>
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                            ${a.status !== 'done' ? `<button onclick="updateApptStatus('${a.id}', 'done', '${dateStr}')" style="background: rgba(46,204,113,0.1); border: 1px solid var(--neon-green); color: var(--neon-green); padding: 4px 10px; border-radius: 8px; cursor: pointer; font-size: 0.7rem; font-weight: 700;">✓ HECHA</button>` : ''}
+                            <button onclick="deleteAppt('${a.id}', '${dateStr}')" style="background: rgba(231,76,60,0.1); border: 1px solid var(--neon-red); color: var(--neon-red); padding: 4px 10px; border-radius: 8px; cursor: pointer; font-size: 0.7rem; font-weight: 700;">✕</button>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        async function updateApptStatus(id, newStatus, dateStr) {
+            const { error } = await supabaseClient.from('crm_appointments').update({ status: newStatus }).eq('id', id);
+            if (!error) {
+                showToast(newStatus === 'done' ? '✅ Cita marcada como completada' : 'Estado actualizado');
+                await loadAllAppointments();
+                loadDayAppointments(dateStr);
+            } else {
+                showToast('Error: ' + error.message, 'error');
+            }
+        }
+
+        async function deleteAppt(id, dateStr) {
+            if (!confirm('¿Eliminar esta cita?')) return;
+            const { error } = await supabaseClient.from('crm_appointments').delete().eq('id', id);
+            if (!error) {
+                showToast('Cita eliminada');
+                await loadAllAppointments();
+                loadDayAppointments(dateStr);
+            } else {
+                showToast('Error: ' + error.message, 'error');
+            }
+        }
+
+        async function loadUpcomingAppointments() {
+            const filterType = document.getElementById('crm-filter-type')?.value || 'all';
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            let upcoming = allAppointments.filter(a => a.appointment_date >= todayStr && a.status === 'pending');
+            if (filterType !== 'all') upcoming = upcoming.filter(a => a.type === filterType);
+            upcoming = upcoming.slice(0, 8);
+
+            const list = document.getElementById('upcoming-appointments-list');
+            if (upcoming.length === 0) {
+                list.innerHTML = `<p style="text-align: center; opacity: 0.4; padding: 20px; font-size: 0.9rem;">Sin próximas citas pendientes</p>`;
+                return;
+            }
+
+            list.innerHTML = upcoming.map(a => {
+                const icon = TYPE_ICONS[a.type] || '📋';
+                const color = TYPE_COLORS[a.type] || 'var(--neon-blue)';
+                const d = new Date(a.appointment_date + 'T00:00:00');
+                const dayLabel = d.toLocaleDateString('es-PE', { weekday: 'short', day: 'numeric', month: 'short' });
+                const timeStr = a.appointment_time ? a.appointment_time.slice(0, 5) : '';
+
+                return `<div style="display: flex; align-items: center; gap: 15px; padding: 15px 20px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-left: 3px solid ${color}; border-radius: 16px; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">
+                    <div style="font-size: 1.5rem;">${icon}</div>
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-weight: 700; font-size: 0.95rem;">${a.client_name}</div>
+                        <div style="font-size: 0.75rem; opacity: 0.5; margin-top: 2px;">${a.client_phone || ''} ${a.description ? '· ' + a.description.slice(0, 40) + (a.description.length > 40 ? '…' : '') : ''}</div>
+                    </div>
+                    <div style="text-align: right; flex-shrink: 0;">
+                        <div style="font-family: 'Orbitron', sans-serif; font-size: 0.75rem; color: ${color}; font-weight: 700;">${dayLabel}</div>
+                        ${timeStr ? `<div style="font-size: 0.7rem; opacity: 0.5; margin-top: 2px;">⏰ ${timeStr}</div>` : ''}
+                    </div>
+                    <button onclick="selectCalDay('${a.appointment_date}')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 0.75rem;" title="Ver en calendario">📅</button>
+                </div>`;
+            }).join('');
+        }
+
+        function updateCrmStats() {
+            const total = allAppointments.length;
+            const done = allAppointments.filter(a => a.status === 'done').length;
+            const pending = allAppointments.filter(a => a.status === 'pending').length;
+            const calls = allAppointments.filter(a => a.type === 'call').length;
+
+            const el = id => document.getElementById(id);
+            if (el('stat-total-appt')) el('stat-total-appt').textContent = total;
+            if (el('stat-done-appt')) el('stat-done-appt').textContent = done;
+            if (el('stat-pending-appt')) el('stat-pending-appt').textContent = pending;
+            if (el('stat-calls-appt')) el('stat-calls-appt').textContent = calls;
+        }
+
+        function changeMonth(dir) {
+            calCurrentDate.setMonth(calCurrentDate.getMonth() + dir);
+            renderCalendar();
+        }
+
+        // Load CRM when section is opened
+        const originalSwitchSection = switchSection;
+        switchSection = function (id) {
+            originalSwitchSection(id);
+            if (id === 'calendar') {
+                loadAllAppointments();
+            }
+        };
+
     </script>
+
     <!-- MODAL: HISTORIAL DE CUADRES -->
-    <div id="modal-history" class="modal-overlay hidden" style="z-index: 2000;">
-        <div class="modal-card" style="max-width: 800px; width: 95%;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3><i class="fas fa-file-invoice-dollar" style="color: var(--primary);"></i> Historial de Cuadres
-                    Diarios</h3>
-                <button class="btn-circle" onclick="closeHistoryModal()"><i class="fas fa-times"></i></button>
+    <div id="modal-history" class="hidden" style="
+        position: fixed; inset: 0;
+        background: rgba(0,0,0,0.75);
+        backdrop-filter: blur(18px);
+        z-index: 3000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    ">
+        <div style="
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 28px;
+            width: 100%;
+            max-width: 760px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 60px 120px rgba(0,0,0,0.6);
+            overflow: hidden;
+        ">
+
+            <!-- Header -->
+            <div style="padding: 28px 32px 20px; border-bottom: 1px solid rgba(255,255,255,0.07); flex-shrink: 0;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <div
+                            style="width:42px; height:42px; background:rgba(79,156,249,0.15); border-radius:12px; display:flex; align-items:center; justify-content:center; color:var(--neon-blue);">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <div>
+                            <h3
+                                style="font-family:'Outfit',sans-serif; font-size:1.1rem; font-weight:800; color:var(--text-main);">
+                                Bitácora de Cuadres</h3>
+                            <p style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">Historial de ingresos
+                                y egresos por día</p>
+                        </div>
+                    </div>
+                    <button onclick="closeHistoryModal()" style="
+                        width:36px; height:36px; border-radius:10px;
+                        border:1px solid rgba(255,255,255,0.1);
+                        background:rgba(255,255,255,0.04);
+                        color:var(--text-muted); cursor:pointer;
+                        display:flex; align-items:center; justify-content:center;
+                        transition: all 0.2s;
+                    " onmouseover="this.style.background='rgba(231,76,60,0.15)'; this.style.color='var(--neon-red)'"
+                        onmouseout="this.style.background='rgba(255,255,255,0.04)'; this.style.color='var(--text-muted)'"><i
+                            class="fas fa-times"></i></button>
+                </div>
+
+                <!-- Summary Pills -->
+                <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px;">
+                    <div
+                        style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:14px; text-align:center;">
+                        <div
+                            style="font-size:0.65rem; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); margin-bottom:6px;">
+                            Días</div>
+                        <div id="hist-days-count"
+                            style="font-family:'Orbitron',sans-serif; font-size:1.2rem; font-weight:800;">—</div>
+                    </div>
+                    <div
+                        style="background:rgba(39,174,96,0.06); border:1px solid rgba(39,174,96,0.15); border-radius:14px; padding:14px; text-align:center;">
+                        <div
+                            style="font-size:0.65rem; text-transform:uppercase; letter-spacing:1px; color:var(--neon-green); margin-bottom:6px;">
+                            Total Ingresado</div>
+                        <div id="hist-total-inc"
+                            style="font-family:'Orbitron',sans-serif; font-size:1rem; font-weight:800; color:var(--neon-green);">
+                            —</div>
+                    </div>
+                    <div
+                        style="background:rgba(231,76,60,0.06); border:1px solid rgba(231,76,60,0.15); border-radius:14px; padding:14px; text-align:center;">
+                        <div
+                            style="font-size:0.65rem; text-transform:uppercase; letter-spacing:1px; color:var(--neon-red); margin-bottom:6px;">
+                            Total Egresado</div>
+                        <div id="hist-total-exp"
+                            style="font-family:'Orbitron',sans-serif; font-size:1rem; font-weight:800; color:var(--neon-red);">
+                            —</div>
+                    </div>
+                    <div
+                        style="background:rgba(79,156,249,0.06); border:1px solid rgba(79,156,249,0.15); border-radius:14px; padding:14px; text-align:center;">
+                        <div
+                            style="font-size:0.65rem; text-transform:uppercase; letter-spacing:1px; color:var(--neon-blue); margin-bottom:6px;">
+                            Balance Global</div>
+                        <div id="hist-total-bal"
+                            style="font-family:'Orbitron',sans-serif; font-size:1rem; font-weight:800;">—</div>
+                    </div>
+                </div>
             </div>
-            <div style="max-height: 60vh; overflow-y: auto;">
-                <table style="width: 100%; border-collapse: collapse; text-align: left;">
-                    <thead style="position: sticky; top: 0; background: var(--glass-bg); z-index: 1;">
-                        <tr>
-                            <th style="padding: 12px; border-bottom: 1px solid var(--border);">Fecha</th>
-                            <th style="padding: 12px; border-bottom: 1px solid var(--border);">Ingresos</th>
-                            <th style="padding: 12px; border-bottom: 1px solid var(--border);">Egresos</th>
-                            <th style="padding: 12px; border-bottom: 1px solid var(--border);">Balance</th>
-                        </tr>
-                    </thead>
-                    <tbody id="history-table-body">
-                        <!-- Cargado dinámicamente -->
-                    </tbody>
-                </table>
+
+            <!-- Column Labels -->
+            <div
+                style="display:grid; grid-template-columns:1fr 200px 160px 48px; gap:0; padding:10px 32px; background:rgba(255,255,255,0.02); border-bottom:1px solid rgba(255,255,255,0.05);">
+                <span
+                    style="font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted);">Fecha</span>
+                <span
+                    style="font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted);">Ingreso
+                    / Egreso</span>
+                <span
+                    style="font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted);">Balance</span>
+                <span></span>
             </div>
-            <div style="margin-top: 20px; text-align: right;">
-                <button class="btn-action" onclick="closeHistoryModal()">Cerrar Historial</button>
+
+            <!-- Row list -->
+            <div id="history-table-body" style="flex:1; overflow-y:auto; padding:12px 20px;"></div>
+
+            <!-- Footer -->
+            <div
+                style="padding:20px 32px; border-top:1px solid rgba(255,255,255,0.07); display:flex; justify-content:flex-end; flex-shrink:0;">
+                <button onclick="closeHistoryModal()" style="
+                    padding:10px 24px; border-radius:12px;
+                    background:rgba(255,255,255,0.06);
+                    border:1px solid rgba(255,255,255,0.1);
+                    color:var(--text-main); cursor:pointer;
+                    font-size:0.85rem; font-weight:600;
+                    transition:0.2s;
+                " onmouseover="this.style.background='rgba(255,255,255,0.1)'"
+                    onmouseout="this.style.background='rgba(255,255,255,0.06)'">Cerrar</button>
             </div>
         </div>
     </div>
+
+    <style>
+        /* --- History Rows --- */
+        .hist-row {
+            display: grid;
+            grid-template-columns: 1fr 200px 160px 48px;
+            align-items: center;
+            gap: 0;
+            padding: 14px 12px;
+            border-radius: 16px;
+            margin-bottom: 6px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.25s ease;
+            animation: rowFadeIn 0.4s ease both;
+            animation-delay: var(--row-delay, 0s);
+        }
+
+        .hist-row:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.1);
+            transform: translateX(4px);
+        }
+
+        @keyframes rowFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hist-row-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .hist-day-badge {
+            width: 44px;
+            height: 44px;
+            background: rgba(79, 156, 249, 0.08);
+            border: 1px solid rgba(79, 156, 249, 0.2);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .hist-day-num {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            font-weight: 800;
+            line-height: 1;
+            color: var(--neon-blue);
+        }
+
+        .hist-day-month {
+            font-size: 0.55rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-top: 1px;
+        }
+
+        .hist-row-amounts {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .hist-amount {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .hist-amount i {
+            font-size: 0.65rem;
+        }
+
+        .hist-amount.inc {
+            color: var(--neon-green);
+        }
+
+        .hist-amount.exp {
+            color: var(--neon-red);
+        }
+
+        .hist-row-balance {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .hist-bar-wrap {
+            width: 100%;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .hist-bar {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.6s ease;
+        }
+
+        .hist-trend-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            opacity: 0.7;
+        }
+    </style>
+
 </body>
 
 </html>
